@@ -14,7 +14,7 @@ module instruction_memory
         input  wire                            i_start,
         input  wire [$clog2(MEM_SIZE) - 1 : 0] i_pc,
         input  wire [REG_SIZE - 1 : 0]         i_instruction,
-        output wire [REG_SIZE - 1 : 0]         o_instruction,
+        output wire [REG_SIZE - 1 : 0]         o_instruction
     );
 
     localparam TOTAL_INSTRUCTIONS = MEM_SIZE / REG_SIZE;
@@ -57,7 +57,7 @@ module instruction_memory
 
             `STATE_INSTRUCTION_MEMORY_WRITE_INSTRUCTION: 
             begin
-                instruction_buffer_next = { i_instruction_data, instruction_buffer[MEM_SIZE - 1 : REG_SIZE] };
+                instruction_buffer_next = { i_instruction, instruction_buffer[MEM_SIZE - 1 : REG_SIZE] };
 
                 if (i_instruction == `INSTRUCTION_HALT) 
                     begin     
@@ -80,7 +80,7 @@ module instruction_memory
             end
 
             `STATE_INSTRUCTION_MEMORY_SEND_INSTRUCTION: 
-                instruction_output_next = instruction_buffer[i_pc +: SIZE_REG];
+                instruction_output_next = instruction_buffer[i_pc +: REG_SIZE];
         endcase
     end
 
