@@ -19,7 +19,7 @@ module pc
     reg [`BITS_FOR_STATE_COUNTER_PC - 1 : 0] state, state_next; 
     reg [PC_SIZE - 1 : 0]                    pc, pc_next;
 
-    always @ (posedge i_clk) begin
+    always @ (posedge i_clk or posedge i_reset) begin
         if(i_reset)
             begin
                 state <= `STATE_PC_IDLE;
