@@ -8,11 +8,11 @@ module mux
         parameter BUS_SIZE = `DEFAULT_MUX_BUS_SIZE
     )
     (
-        input  wire [CHANNELS - 1 : 0] selector,
-        input  wire [BUS_SIZE - 1 : 0] data_in [CHANNELS - 1 : 0], 
-        output wire [BUS_SIZE - 1 : 0] data_out 
+        input  wire [CHANNELS - 1 : 0]            selector,
+        input  wire [CHANNELS * BUS_SIZE - 1 : 0] data_in,
+        output wire [BUS_SIZE - 1 : 0]            data_out 
     );
-          
-    assign data_out = data_in[selector];
+
+    assign data_out = data_in >> BUS_SIZE * selector;      
 
 endmodule
