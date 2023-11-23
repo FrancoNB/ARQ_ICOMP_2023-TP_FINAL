@@ -1,6 +1,8 @@
 `ifndef __PC_VH__
 `define __PC_VH__
-    `define DEFAULT_PC_SIZE 32
+    `include "common.vh"
+    
+    `define DEFAULT_PC_SIZE `ARQUITECTURE_BITS
 
     `define NUMBER_OF_STATE_PC        4
     `define BITS_FOR_STATE_COUNTER_PC $clog2(`NUMBER_OF_STATE_PC)
