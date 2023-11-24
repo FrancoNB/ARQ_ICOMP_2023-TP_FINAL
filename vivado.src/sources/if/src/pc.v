@@ -45,10 +45,10 @@ module pc
                     pc_next = `CLEAR(PC_SIZE);
 
                     if(i_start)
-                        state_next = `STATE_PC_INCREMENT;
+                        state_next = `STATE_PC_NEXT;
                 end
 
-            `STATE_PC_INCREMENT:
+            `STATE_PC_NEXT:
                 begin
                     if (i_enable)
                         begin
@@ -61,25 +61,23 @@ module pc
                                     else
                                         begin
                                             pc_next    = i_next_pc;
-                                            state_next = `STATE_PC_INCREMENT;
+                                            state_next = `STATE_PC_NEXT;
                                         end
                                 end
                         end
                 end
             
             `STATE_PC_NOT_LOAD:
-                state_next = `STATE_PC_INCREMENT;
+                state_next = `STATE_PC_NEXT;
 
             `STATE_PC_PROGRAM_END:
             begin
                 pc_next = `CLEAR(PC_SIZE);
 
-                if(i_halt)
-                    state_next = `STATE_PC_PROGRAM_END;
-                else 
+                if(~i_halt)
                     begin
                         if(i_start)
-                            state_next = `STATE_PC_INCREMENT;
+                            state_next = `STATE_PC_NEXT;
                         else
                             state_next = `STATE_PC_IDLE;
                     end
