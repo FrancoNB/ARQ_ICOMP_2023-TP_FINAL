@@ -4,86 +4,103 @@
 
 module instruction_memory 
     #(
-        parameter REG_SIZE = `DEFAULT_INSTRUCTION_MEMORY_REG_SIZE,
-        parameter MEM_SIZE = `DEFAULT_INSTRUCTION_MEMORY_MEM_SIZE
+        parameter WORD_SIZE_IN_BYTES = `DEFAULT_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES,
+        parameter MEM_SIZE_IN_WORDS  = `DEFAULT_INSTRUCTION_MEMORY_MEM_SIZE_IN_WORDS
     )
     (
-        input  wire                            i_clk,
-        input  wire                            i_reset,
-        input  wire                            i_instruction_write,
-        input  wire                            i_start,
-        input  wire [$clog2(MEM_SIZE) - 1 : 0] i_pc,
-        input  wire [REG_SIZE - 1 : 0]         i_instruction,
-        output wire [REG_SIZE - 1 : 0]         o_instruction
+        input  wire                              i_clk,
+        input  wire                              i_reset,
+        input  wire                              i_instruction_write,
+        input  wire [POINTER_SIZE - 1 : 0]       i_pc,
+        input  wire [WORD_SIZE_IN_BITS - 1 : 0]  i_instruction,
+        output wire                              o_full,
+        output wire                              o_empty,
+        output wire [WORD_SIZE_IN_BITS - 1 : 0]  o_instruction
     );
 
-    localparam TOTAL_INSTRUCTIONS = MEM_SIZE / REG_SIZE;
+    localparam WORD_SIZE_IN_BITS   = WORD_SIZE_IN_BYTES * `BYTE_SIZE;
+    localparam MEM_SIZE_IN_BITS    = MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BITS + WORD_SIZE_IN_BITS;
+    localparam POINTER_SIZE        = $clog2(MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES);
+    localparam MAX_POINTER_DIR     = MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES;
 
     reg [`BITS_FOR_STATE_COUNTER_INSTRUCTION_MEMORY - 1 : 0] state, state_next;
-    reg [REG_SIZE - 1 : 0]                                   instruction_output, instruction_output_next;
-    reg [MEM_SIZE - 1 : 0]                                   instruction_buffer, instruction_buffer_next;
-    reg [$clog2(TOTAL_INSTRUCTIONS) - 1 : 0]                 total_instructions, total_instructions_next;
-
+    reg [WORD_SIZE_IN_BITS - 1 : 0]                          instruction_output, instruction_output_next;
+    reg [POINTER_SIZE - 1 : 0]                               write_pointer, write_pointer_next;
+    reg [MEM_SIZE_IN_BITS - 1 : 0]                           memory_buffer, memory_buffer_next;
+    reg                                                      full, empty, full_next, empty_next;
+    reg                                                      write_operation_started;
+    
     always @(posedge i_clk or posedge i_reset) 
     begin
         if (i_reset) 
             begin
-                state              <= `STATE_INSTRUCTION_MEMORY_IDLE;
-                instruction_buffer <= `CLEAR(MEM_SIZE);
-                instruction_output <= `CLEAR(REG_SIZE);
-                total_instructions <= TOTAL_INSTRUCTIONS;
+                state                   <= `STATE_INSTRUCTION_MEMORY_WRITE;
+                memory_buffer           <= `CLEAR(MEM_SIZE_IN_BITS);
+                instruction_output      <= `CLEAR(WORD_SIZE_IN_BITS);
+                full                    <= `LOW;
+                empty                   <= `HIGH;
+                write_operation_started <= `LOW;
+                write_pointer           <= `CLEAR(POINTER_SIZE);
             end 
         else 
             begin
                 state              <= state_next;
-                instruction_buffer <= instruction_buffer_next;
-                total_instructions <= total_instructions_next;
+                memory_buffer      <= memory_buffer_next;
+                write_pointer      <= write_pointer_next;
+                full               <= full_next;
+                empty              <= empty_next;
                 instruction_output <= instruction_output_next;
             end
     end
 
     always @* begin
         state_next              = state;
-        instruction_buffer_next = instruction_buffer;
-        total_instructions_next = total_instructions;
+        memory_buffer_next      = memory_buffer;
+        write_pointer_next      = write_pointer;
+        full_next               = full;
+        empty_next              = empty;
         instruction_output_next = instruction_output;
 
         case (state)
-            `STATE_INSTRUCTION_MEMORY_IDLE: 
+            `STATE_INSTRUCTION_MEMORY_WRITE: 
             begin
-                if (i_instruction_write) 
-                    state_next = `STATE_INSTRUCTION_MEMORY_WRITE_INSTRUCTION;
-            end
-
-            `STATE_INSTRUCTION_MEMORY_WRITE_INSTRUCTION: 
-            begin
-                instruction_buffer_next = { i_instruction, instruction_buffer[MEM_SIZE - 1 : REG_SIZE] };
-
-                if (i_instruction == `INSTRUCTION_HALT) 
-                    begin     
-                        instruction_buffer_next = instruction_buffer_next >> (REG_SIZE * (total_instructions - 1));
-                        state_next              = `STATE_INSTRUCTION_MEMORY_READY_TO_EXECUTE;
-                    end 
-                else 
+                 if(~full && i_instruction_write && ~write_operation_started)
                     begin
-                        total_instructions_next = total_instructions - 1;
-                        state_next              = `STATE_INSTRUCTION_MEMORY_IDLE;
+                        empty_next = `LOW;
+                        write_operation_started = `HIGH;
+                        
+                        memory_buffer_next = { i_instruction, memory_buffer[MEM_SIZE_IN_BITS - 1 : WORD_SIZE_IN_BITS] };
+
+                        if (i_instruction == `INSTRUCTION_HALT) 
+                            begin     
+                                memory_buffer_next      = memory_buffer_next >> (WORD_SIZE_IN_BITS * (MAX_POINTER_DIR - write_pointer));
+                                state_next              = `STATE_INSTRUCTION_MEMORY_READ;
+                            end 
+                        else 
+                            begin
+                                if(write_pointer == MAX_POINTER_DIR)
+                                    full_next = `HIGH;
+                                else
+                                    begin
+                                        write_pointer_next = write_pointer + WORD_SIZE_IN_BYTES;
+                                    end
+                            end
                     end
+                else
+                    write_operation_started = `LOW;
             end
 
-            `STATE_INSTRUCTION_MEMORY_READY_TO_EXECUTE: 
+            `STATE_INSTRUCTION_MEMORY_READ:
             begin
-                instruction_output_next = instruction_buffer[0 +: REG_SIZE];
-                
-                if (i_start)
-                    state_next = `STATE_INSTRUCTION_MEMORY_SEND_INSTRUCTION;
+                if (~empty)
+                    instruction_output_next = memory_buffer[i_pc * `BYTE_SIZE +: WORD_SIZE_IN_BITS];
             end
 
-            `STATE_INSTRUCTION_MEMORY_SEND_INSTRUCTION: 
-                instruction_output_next = instruction_buffer[i_pc +: REG_SIZE];
         endcase
     end
 
     assign o_instruction = instruction_output;
+    assign o_full        = full;
+    assign o_empty       = empty;
 
 endmodule

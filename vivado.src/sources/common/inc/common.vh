@@ -1,6 +1,8 @@
 `ifndef __COMMON_VH__
 `define __COMMON_VH__
     `define ARQUITECTURE_BITS 32
+    
+    `define BYTE_SIZE 8    
 
     `define HIGH 1'b1
     `define LOW  1'b0
