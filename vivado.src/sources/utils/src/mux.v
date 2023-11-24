@@ -8,7 +8,7 @@ module mux
         parameter BUS_SIZE = `DEFAULT_MUX_BUS_SIZE
     )
     (
-        input  wire [CHANNELS - 1 : 0]            selector,
+        input  wire [$clog2(CHANNELS) - 1 : 0]    selector,
         input  wire [CHANNELS * BUS_SIZE - 1 : 0] data_in,
         output wire [BUS_SIZE - 1 : 0]            data_out 
     );

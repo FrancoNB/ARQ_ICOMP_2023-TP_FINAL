@@ -7,8 +7,9 @@
     `define HIGH 1'b1
     `define LOW  1'b0
 
-    `define CLEAR(len) { len {`LOW}}
-    `define SET  (len) { len {`HIGH}}
+    `define CLEAR(len) { len {`LOW} }
+    `define SET  (len) { len {`HIGH} }
 
-    `define INSTRUCTION_HALT `CLEAR(`ARQUITECTURE_BITS)
+    `define INSTRUCTION_HALT { `ARQUITECTURE_BITS {`LOW} }
+    `define INSTRUCTION_NOP  { `ARQUITECTURE_BITS {`LOW} }
 `endif // __COMMON_VH__

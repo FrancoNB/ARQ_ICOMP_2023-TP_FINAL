@@ -17,25 +17,25 @@ module tb_mux;
 
     mux 
     #(
-        .CHANNELS_2(CHANNELS_2), 
-        .BUS_SIZE  (`ARQUITECTURE_BITS)
+        .CHANNELS(CHANNELS_2), 
+        .BUS_SIZE(`ARQUITECTURE_BITS)
     ) 
     mux_2 
     (
         .selector(selector_2),
-        .data_in(data_in_2),
+        .data_in (data_in_2),
         .data_out(data_out_2)
     );
 
     mux 
     #(
-        .CHANNELS_4(CHANNELS_4), 
-        .BUS_SIZE  (`ARQUITECTURE_BITS)
+        .CHANNELS(CHANNELS_4), 
+        .BUS_SIZE(`ARQUITECTURE_BITS)
     ) 
     mux_4 
     (
         .selector(selector_4),
-        .data_in(data_in_4),
+        .data_in (data_in_4),
         .data_out(data_out_4)
     );
     
