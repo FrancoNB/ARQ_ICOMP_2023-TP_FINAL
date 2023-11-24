@@ -7,7 +7,6 @@ module tb_instruction_memory;
     localparam WORD_SIZE_IN_BYTES = 4;
     localparam MEM_SIZE_IN_WORDS  = 10;
     localparam POINTER_SIZE       = $clog2(MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES);
-    localparam NUM_REG_TO_WRITE   = 10;
 
     reg                                            i_clk;
     reg                                            i_reset;
@@ -16,10 +15,13 @@ module tb_instruction_memory;
     reg  [WORD_SIZE_IN_BYTES * `BYTE_SIZE - 1 : 0] i_instruction;
     wire [WORD_SIZE_IN_BYTES * `BYTE_SIZE - 1 : 0] o_instruction;
 
-    instruction_memory #(
+    instruction_memory 
+    #(
         .WORD_SIZE_IN_BYTES(WORD_SIZE_IN_BYTES),
         .MEM_SIZE_IN_WORDS(MEM_SIZE_IN_WORDS)
-    ) dut (
+    ) 
+    dut 
+    (
         .i_clk(i_clk),
         .i_reset(i_reset),
         .i_instruction_write(i_instruction_write),
