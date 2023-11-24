@@ -1,22 +1,31 @@
 `timescale 1ns / 1ps
 
+`include "tb.vh"
+
 module tb_adder;
 
-    parameter BUS_SIZE = 32;
+    reg  [`ARQUITECTURE_BITS - 1 : 0] a;
+    reg  [`ARQUITECTURE_BITS - 1 : 0] b;
+    wire [`ARQUITECTURE_BITS - 1 : 0] sum;
 
-    reg [BUS_SIZE-1:0] a;
-    reg [BUS_SIZE-1:0] b;
-    wire [BUS_SIZE-1:0] sum;
-
-    adder #(BUS_SIZE) dut (
+    adder 
+    #
+    (
+        .BUS_SIZE(`ARQUITECTURE_BITS)
+    ) 
+    dut 
+    (
         .a(a),
         .b(b),
         .sum(sum)
     );
 
-    initial begin
+    initial 
+    begin
         repeat (10) 
         begin
+            $srandom(1658115);
+
             a = $random;
             b = $random;
 
