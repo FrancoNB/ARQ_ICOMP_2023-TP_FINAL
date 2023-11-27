@@ -36,10 +36,10 @@ module _if
         .CHANNELS(2), 
         .BUS_SIZE(BUS_SIZE)
     ) 
-    mux_2_unit_mem
+    mux_2_unit_pc
     (
         .selector(i_next_pc_src),
-        .data_in ({o_next_seq_pc, i_next_not_seq_pc}),
+        .data_in ({i_next_not_seq_pc, o_next_seq_pc}),
         .data_out(next_pc)
     );
 
@@ -48,10 +48,10 @@ module _if
         .CHANNELS(2), 
         .BUS_SIZE(BUS_SIZE)
     ) 
-    mux_2_unit_pc
+    mux_2_unit_mem
     (
         .selector(i_next_pc_src),
-        .data_in ({instruction, `INSTRUCTION_NOP}),
+        .data_in ({`INSTRUCTION_NOP, instruction}),
         .data_out(o_instruction)
     );
 
