@@ -4,8 +4,9 @@
     
     `define BYTE_SIZE 8    
 
-    `define HIGH 1'b1
-    `define LOW  1'b0
+    `define HIGH  1'b1
+    `define LOW   1'b0
+    `define UNDEF 1'bx
 
     `define CLEAR(len) { len {`LOW} }
     `define SET  (len) { len {`HIGH} }
