@@ -43,6 +43,8 @@ module tb_registers_bank;
 
     initial 
     begin
+        $srandom(616563);
+        
         i_clk = 0;
         i_reset = 1;
         i_write_enable = 0;
