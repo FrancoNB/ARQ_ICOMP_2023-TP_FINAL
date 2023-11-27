@@ -11,7 +11,6 @@ module registers_bank
         input  wire                                                i_clk, 
         input  wire                                                i_reset,
         input  wire                                                i_write_enable,
-        input  wire                                                i_read_enable,
         input  wire [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_a,
         input  wire [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_b,
         input  wire [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_wr,
@@ -42,11 +41,8 @@ module registers_bank
 
     always @ (negedge i_clk)
     begin
-        if (i_read_enable)
-            begin
-                bus_a <= registers[i_addr_a];
-                bus_b <= registers[i_addr_b];
-            end
+        bus_a <= registers[i_addr_a];
+        bus_b <= registers[i_addr_b];
     end
 
     assign o_bus_a     = bus_a;
