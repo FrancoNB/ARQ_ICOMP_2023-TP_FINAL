@@ -6,7 +6,7 @@ module id
     #(
         parameter REGISTERS_BANK_SIZE = `DEFAULT_REGISTERS_BANK_SIZE,
         parameter PC_SIZE             = `DEFAULT_PC_SIZE,
-        parameter BUS_SIZE            = `DEFAULT_ID_BUS_SIZE,
+        parameter BUS_SIZE            = `DEFAULT_ID_BUS_SIZE
     )
     (
         /* input controls wires */
@@ -60,15 +60,15 @@ module id
 
     assign jump_pc_dir     = { i_next_seq_pc[31:28], dir, 2'b00 };
     
-    assign o_next_pc_src   = main_ctrl_regs[0];
-    assign jmp_ctrl        = main_ctrl_regs[2 : 1];
+    assign o_next_pc_src   = main_ctrl_regs[13];
+    assign jmp_ctrl        = main_ctrl_regs[12:11];
 
-    assign o_reg_write     = next_stage_ctrl_regs[0];
-    assign o_reg_dst       = next_stage_ctrl_regs[2:1];
-    assign o_mem_to_reg    = next_stage_ctrl_regs[4:3];
+    assign o_reg_write     = next_stage_ctrl_regs[10];
+    assign o_reg_dst       = next_stage_ctrl_regs[9:8];
+    assign o_mem_to_reg    = next_stage_ctrl_regs[7:6];
     assign o_mem_write     = next_stage_ctrl_regs[5];
-    assign o_alu_src       = next_stage_ctrl_regs[7:6];
-    assign o_alu_op        = next_stage_ctrl_regs[10:8];
+    assign o_alu_src       = next_stage_ctrl_regs[4:3];
+    assign o_alu_op        = next_stage_ctrl_regs[2:0];
 
     registers_bank 
     #(
@@ -149,7 +149,7 @@ module id
     mux_2_unit
     (
         .selector (i_ctr_reg_src),
-        .data_in  ({11'b0, main_ctrl_regs[13:3]}),
+        .data_in  ({11'b0, main_ctrl_regs[10:0]}),
         .data_out (next_stage_ctrl_regs)
     );
 

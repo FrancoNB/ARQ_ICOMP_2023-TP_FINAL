@@ -54,14 +54,14 @@ module main_control
     localparam ALU_OP_SLTI           = 3'b101;
     localparam ALU_OP_UNDEFINED      = 3'bxxx;
     
-    // b0            : next_pc_src
-    // b1, b2        : jmp_ctrl
-    // b3            : reg_write 
-    // b4, b5        : reg_dst
-    // b6, b7        : mem_to_reg
-    // b8            : mem_write
-    // b9, b10       : alu_src
-    // b11, b12, b13 : alu_op
+    // b13        : next_pc_src
+    // b12, b11   : jmp_ctrl
+    // b10        : reg_write 
+    // b9, b8     : reg_dst
+    // b7, b6     : mem_to_reg
+    // b5         : mem_write
+    // b4, b3     : alu_src
+    // b2, b1, b0 : alu_op
     
     reg [13 : 0] ctrl_regs; 
 
