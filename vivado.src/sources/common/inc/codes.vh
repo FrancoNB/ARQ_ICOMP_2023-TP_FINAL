@@ -82,11 +82,14 @@
     `define CODE_ALU_CTR_SLTI           3'b101 // Set less than immediate instruction
     `define CODE_ALU_CTR_UNDEFINED      3'bxxx // Undefined instruction
 
-    `define CODE_ALU_CTR_SRC_BUS_B      2'b00  // Bus B
-    `define CODE_ALU_CTR_SRC_SIG_INM    2'b01  // Sign immediate
-    `define CODE_ALU_CTR_SRC_USIG_INM   2'b10  // Unsigned immediate
-    `define CODE_ALU_CTR_SRC_UPPER_INM  2'b11  // Upper immediate
-    `define CODE_ALU_CTR_SRC_NOTHING    2'bxx  // Nothing
+    `define CODE_ALU_CTR_SRC_A_SHAMT      1'b0  // Shamt
+    `define CODE_ALU_CTR_SRC_A_BUS_A      1'b1  // Bus A
+    
+    `define CODE_ALU_CTR_SRC_B_BUS_B      2'b00  // Bus B
+    `define CODE_ALU_CTR_SRC_B_SIG_INM    2'b01  // Sign immediate
+    `define CODE_ALU_CTR_SRC_B_USIG_INM   2'b10  // Unsigned immediate
+    `define CODE_ALU_CTR_SRC_B_UPPER_INM  2'b11  // Upper immediate
+    `define CODE_ALU_CTR_SRC_B_NOTHING    2'bxx  // Nothing
     
     /** --------------------------- Codes for ALU excution --------------------------- **/
 
@@ -103,7 +106,6 @@
     `define CODE_ALU_EX_SLLV         4'b1010 // Shift left logical
     `define CODE_ALU_EX_SRLV         4'b1011 // Shift right logical
     `define CODE_ALU_EX_SRAV         4'b1100 // Shift right arithmetic
-    `define CODE_ALU_EX_SLL16        4'b1101 // Shift left logical 16
     `define CODE_ALU_EX_NEQ          4'b1110 // Equal
     `define CODE_ALU_EX_NOP          4'b1111 // Not operation
 

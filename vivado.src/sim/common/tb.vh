@@ -1,7 +1,7 @@
 `ifndef __TB_VH__
 `define __TB_VH__
     `include "common.vh"
-
+    
     `define CLK_PERIOD       10
 
     `define CLK_TOGGLE(clk, period) \

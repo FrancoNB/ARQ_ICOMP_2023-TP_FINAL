@@ -3,6 +3,7 @@
     `include "main_control.vh"
     `include "registers_bank.vh"
     `include "sig_extend.vh"
+    `include "unsig_extend.vh"
     `include "pc.vh"
 
     `define DEFAULT_ID_BUS_SIZE         `ARQUITECTURE_BITS 

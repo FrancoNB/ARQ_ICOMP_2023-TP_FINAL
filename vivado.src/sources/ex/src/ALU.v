@@ -32,7 +32,6 @@ module alu
             `CODE_ALU_EX_SLLV  : result = i_data_a << i_data_b;
             `CODE_ALU_EX_SRLV  : result = i_data_a >> i_data_b;
             `CODE_ALU_EX_SRAV  : result = i_data_a >>> i_data_b;
-            `CODE_ALU_EX_SLL16 : result = i_data_a << 16;
             `CODE_ALU_EX_NEQ   : result = (i_data_a == i_data_b);
             default            : result = {IO_BUS_WIDTH {1'bz}};
         endcase
