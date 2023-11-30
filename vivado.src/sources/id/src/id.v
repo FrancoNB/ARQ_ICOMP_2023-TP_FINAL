@@ -45,6 +45,7 @@ module id
     wire [13 : 0]           main_ctrl_regs;
     wire [10 : 0]           next_stage_ctrl_regs; 
     wire [BUS_SIZE - 1 : 0] imm_ext_signed_shifted;
+    wire [BUS_SIZE - 1 : 0] dir_shifted;
     wire [5 : 0]            op;
     wire [15 : 0]           imm;
     wire [25 : 0]           dir;
@@ -58,7 +59,7 @@ module id
     assign imm             = i_instruction[15:0];
     assign o_funct         = i_instruction[5:0];
 
-    assign jump_pc_dir     = { i_next_seq_pc[31:28], dir, 2'b00 };
+    assign jump_pc_dir     = { i_next_seq_pc[31:28], dir_shifted[27:0] };
     
     assign o_next_pc_src   = main_ctrl_regs[13];
     assign jmp_ctrl        = main_ctrl_regs[12:11];
@@ -123,10 +124,21 @@ module id
         .BUS_SIZE   (BUS_SIZE), 
         .SHIFT_LEFT (2)
     ) 
-    shift_left_unit 
+    shift_left_ext_imm_signed_unit 
     (
         .in  (o_imm_ext_signed),
         .out (imm_ext_signed_shifted)
+    );
+
+    shift_left 
+    #(
+        .BUS_SIZE   (BUS_SIZE), 
+        .SHIFT_LEFT (2)
+    ) 
+    shift_left_dir_unit 
+    (
+        .in  (dir),
+        .out (dir_shifted)
     );
 
     adder 
