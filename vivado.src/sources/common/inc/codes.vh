@@ -106,7 +106,6 @@
     `define CODE_ALU_EX_SLLV         4'b1010 // Shift left logical
     `define CODE_ALU_EX_SRLV         4'b1011 // Shift right logical
     `define CODE_ALU_EX_SRAV         4'b1100 // Shift right arithmetic
-    `define CODE_ALU_EX_NEQ          4'b1110 // Equal
     `define CODE_ALU_EX_NOP          4'b1111 // Not operation
 
 `endif // __CODES_VH__
