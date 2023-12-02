@@ -48,25 +48,32 @@
 
     /** --------------------------- Codes for MAIN control --------------------------- **/   
 
-    `define CODE_MAIN_CTR_NEXT_PC_SRC_SEQ       1'b0  // Sequential
-    `define CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ   1'b1  // Not sequential
-    `define CODE_MAIN_CTR_NOT_JMP               2'bxx // Not jump
-    `define CODE_MAIN_CTR_JMP_DIR               2'b10 // Jump direct
-    `define CODE_MAIN_CTR_JMP_REG               2'b01 // Jump register
-    `define CODE_MAIN_CTR_JMP_BRANCH            2'b00 // Jump branch
-    `define CODE_MAIN_CTR_REG_WRITE_ENABLE      1'b1  // Enable register write
-    `define CODE_MAIN_CTR_REG_WRITE_DISABLE     1'b0  // Disable register write
-    `define CODE_MAIN_CTR_REG_DST_RD            2'b01 // Register destination is rd
-    `define CODE_MAIN_CTR_REG_DST_GPR_31        2'b10 // Register destination is gpr[31]
-    `define CODE_MAIN_CTR_REG_DST_RT            2'b00 // Register destination is rt
-    `define CODE_MAIN_CTR_REG_DST_NOTHING       2'bxx // Register destination is nothing
-    `define CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT 2'b00 // Memory to register is alu result
-    `define CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT 2'b01 // Memory to register is memory result
-    `define CODE_MAIN_CTR_MEM_TO_REG_HALF_WORD  2'b10 // Memory to register is half word
-    `define CODE_MAIN_CTR_MEM_TO_REG_BYTE       2'b11 // Memory to register is byte
-    `define CODE_MAIN_CTR_MEM_TO_REG_NOTHING    2'bxx // Memory to register is nothing
-    `define CODE_MAIN_CTR_MEM_WRITE_ENABLE      1'b1  // Enable memory write
-    `define CODE_MAIN_CTR_MEM_WRITE_DISABLE     1'b0  // Disable memory write
+    `define CODE_MAIN_CTR_NEXT_PC_SRC_SEQ          1'b0   // Sequential
+    `define CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ      1'b1   // Not sequential
+    `define CODE_MAIN_CTR_NOT_JMP                  2'bxx  // Not jump
+    `define CODE_MAIN_CTR_JMP_DIR                  2'b10  // Jump direct
+    `define CODE_MAIN_CTR_JMP_REG                  2'b01  // Jump register
+    `define CODE_MAIN_CTR_JMP_BRANCH               2'b00  // Jump branch
+    `define CODE_MAIN_CTR_REG_DST_RD               2'b01  // Register destination is rd
+    `define CODE_MAIN_CTR_REG_DST_GPR_31           2'b10  // Register destination is gpr[31]
+    `define CODE_MAIN_CTR_REG_DST_RT               2'b00  // Register destination is rt
+    `define CODE_MAIN_CTR_REG_DST_NOTHING          2'bxx  // Register destination is nothing
+    `define CODE_MAIN_CTR_MEM_WR_SRC_WORD          2'b00  // Memory write source is word
+    `define CODE_MAIN_CTR_MEM_WR_SRC_HALFWORD      2'b01  // Memory write source is halfword
+    `define CODE_MAIN_CTR_MEM_WR_SRC_BYTE          2'b10  // Memory write source is byte
+    `define CODE_MAIN_CTR_MEM_WR_SRC_NOTHING       2'bxx  // Memory write source is nothing
+    `define CODE_MAIN_CTR_MEM_RD_SRC_WORD          3'b000 // Memory read source is word
+    `define CODE_MAIN_CTR_MEM_RD_SRC_SIG_HALFWORD  3'b001 // Memory read source is signed halfword
+    `define CODE_MAIN_CTR_MEM_RD_SRC_SIG_BYTE      3'b010 // Memory read source is signed byte
+    `define CODE_MAIN_CTR_MEM_RD_SRC_USIG_HALFWORD 3'b011 // Memory read source is unsigned halfword
+    `define CODE_MAIN_CTR_MEM_RD_SRC_USIG_BYTE     3'b100 // Memory read source is unsigned byte
+    `define CODE_MAIN_CTR_MEM_RD_SRC_NOTHING       3'bxxx // Memory read source is nothing
+    `define CODE_MAIN_CTR_MEM_WRITE_ENABLE         1'b1   // Enable memory write
+    `define CODE_MAIN_CTR_MEM_WRITE_DISABLE        1'b0   // Disable memory write
+    `define CODE_MAIN_CTR_WB_ENABLE                1'b1   // Enable register write back
+    `define CODE_MAIN_CTR_WB_DISABLE               1'b0   // Disable register write back
+    `define CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT    1'b0   // Memory result to register
+    `define CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT    1'b1   // ALU result to register
 
     /** --------------------------- Codes for ALU control --------------------------- **/
 

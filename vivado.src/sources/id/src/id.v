@@ -22,10 +22,12 @@ module id
         input  wire [PC_SIZE - 1 : 0]                        i_next_seq_pc,
         /* output controls wires */
         output wire                                          o_next_pc_src,
-        output wire                                          o_reg_write,
+        output wire [2 : 0]                                  o_mem_rd_src,
+        output wire [1 : 0]                                  o_mem_wr_src,
         output wire                                          o_mem_write,
+        output wire                                          o_wb,
+        output wire                                          o_mem_to_reg,
         output wire [1 : 0]                                  o_reg_dst,
-        output wire [1 : 0]                                  o_mem_to_reg,
         output wire                                          o_alu_src_a,
         output wire [1 : 0]                                  o_alu_src_b,
         output wire [2 : 0]                                  o_alu_op,
@@ -48,8 +50,8 @@ module id
     /* -------------------------- Internal wires -------------------------- */
     wire                    is_zero_result;
     wire [1 : 0]            jmp_ctrl;
-    wire [14 : 0]           main_ctrl_regs;
-    wire [11 : 0]           next_stage_ctrl_regs; 
+    wire [18 : 0]           main_ctrl_regs;
+    wire [15 : 0]           next_stage_ctrl_regs; 
     wire [5 : 0]            op;
     wire [4 : 0]            shamt;
     wire [15 : 0]           inm;
@@ -61,26 +63,28 @@ module id
     wire [BUS_SIZE - 1 : 0] jump_pc_dir;
     
     /* -------------------------- Assignment internal wires -------------------------- */
-    assign op              = i_instruction[31:26];
-    assign dir             = i_instruction[25:0];
-    assign inm             = i_instruction[15:0];
-    assign shamt           = i_instruction[10:6];
-    assign jmp_ctrl        = main_ctrl_regs[13:12];
-    assign jump_pc_dir     = { i_next_seq_pc[31:28], dir_ext_unsigned_shifted[27:0] };
+    assign op            = i_instruction[31:26];
+    assign dir           = i_instruction[25:0];
+    assign inm           = i_instruction[15:0];
+    assign shamt         = i_instruction[10:6];
+    assign jmp_ctrl      = main_ctrl_regs[17:16];
+    assign jump_pc_dir   = { i_next_seq_pc[31:28], dir_ext_unsigned_shifted[27:0] };
 
     /* -------------------------- Assignment output wires -------------------------- */
-    assign o_rs            = i_instruction[25:21];
-    assign o_rt            = i_instruction[20:16];
-    assign o_rd            = i_instruction[15:11];
-    assign o_funct         = i_instruction[5:0];
-    assign o_next_pc_src   = main_ctrl_regs[14];
-    assign o_reg_write     = next_stage_ctrl_regs[11];
-    assign o_reg_dst       = next_stage_ctrl_regs[10:9];
-    assign o_mem_to_reg    = next_stage_ctrl_regs[8:7];
-    assign o_mem_write     = next_stage_ctrl_regs[6];
-    assign o_alu_src_a     = next_stage_ctrl_regs[5];
-    assign o_alu_src_b     = next_stage_ctrl_regs[4:3];
-    assign o_alu_op        = next_stage_ctrl_regs[2:0];
+    assign o_rs          = i_instruction[25:21];
+    assign o_rt          = i_instruction[20:16];
+    assign o_rd          = i_instruction[15:11];
+    assign o_funct       = i_instruction[5:0];
+    assign o_next_pc_src = main_ctrl_regs[18];
+    assign o_reg_dst     = next_stage_ctrl_regs[15:14];
+    assign o_alu_src_a   = next_stage_ctrl_regs[13];
+    assign o_alu_src_b   = next_stage_ctrl_regs[12:11];
+    assign o_alu_op      = next_stage_ctrl_regs[10:8];
+    assign o_mem_rd_src  = next_stage_ctrl_regs[7:5];
+    assign o_mem_wr_src  = next_stage_ctrl_regs[4:3];
+    assign o_mem_write   = next_stage_ctrl_regs[2];
+    assign o_wb          = next_stage_ctrl_regs[1];
+    assign o_mem_to_reg  = next_stage_ctrl_regs[0];
 
     /* -------------------------- Register Bank -------------------------- */
     registers_bank 
@@ -223,12 +227,12 @@ module id
     mux 
     #(
         .CHANNELS(2), 
-        .BUS_SIZE(12)
+        .BUS_SIZE(19)
     ) 
     mux_2_unit
     (
         .selector (i_ctr_reg_src),
-        .data_in  ({12'b0, main_ctrl_regs[11:0]}),
+        .data_in  ({19'b0, main_ctrl_regs[15:0]}),
         .data_out (next_stage_ctrl_regs)
     );
 
