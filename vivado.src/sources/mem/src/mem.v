@@ -70,7 +70,7 @@ module mem
     mux_in_mem_unit
     (
         .selector (i_mem_wr_src),
-        .data_in  ({i_bus_b, bus_b_uext_halfword, bus_b_uext_byte}),
+        .data_in  ({bus_b_uext_byte, bus_b_uext_halfword, i_bus_b}),
         .data_out (mem_in_data)
     );
 
@@ -82,7 +82,7 @@ module mem
     mux_out_mem_unit
     (
         .selector (i_mem_rd_src),
-        .data_in  ({mem_out_data, mem_out_data_sext_halfword, mem_out_data_sext_byte, mem_out_data_uext_halfword, mem_out_data_uext_byte}),
+        .data_in  ({mem_out_data_uext_byte, mem_out_data_uext_halfword, mem_out_data_sext_byte, mem_out_data_sext_halfword, mem_out_data}),
         .data_out (o_mem_rd)
     );
 
