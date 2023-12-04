@@ -27,7 +27,6 @@ module ex
         input wire  [BUS_SIZE - 1 : 0] i_inm_upp,
         input wire  [BUS_SIZE - 1 : 0] i_inm_ext_unsigned,
         // output data wires
-        output wire [4 : 0]            o_rt,
         output wire [4 : 0]            o_wb_addr,
         output wire [BUS_SIZE - 1 : 0] o_alu_result,
         output wire [BUS_SIZE - 1 : 0] o_sc_bus_b
@@ -38,10 +37,6 @@ module ex
     wire [BUS_SIZE - 1 : 0] alu_data_b;
     wire [BUS_SIZE - 1 : 0] sc_alu_data_a;
     wire [3 : 0]            alu_ctrl;
-
-    /* -------------------------- Assigns -------------------------- */
-
-    assign o_rt = i_rt;
 
     /* -------------------------- ALU -------------------------- */
     alu 
