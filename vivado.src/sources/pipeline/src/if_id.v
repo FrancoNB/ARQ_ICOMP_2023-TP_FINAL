@@ -1,0 +1,40 @@
+`timescale 1ns / 1ps
+
+`include "if_id.vh"
+
+module if_id
+    #(
+        parameter PC_SIZE          = `DEFAULT_PC_SIZE,
+        parameter INSTRUCTION_SIZE = `DEFAULT_INSTRUCTION_SIZE
+    )
+    (
+        input  wire                            i_clk,
+        input  wire                            i_reset,
+        input  wire                            i_enable,
+        input  wire [PC_SIZE - 1 : 0]          i_next_seq_pc,
+        input  wire [INSTRUCTION_SIZE - 1 : 0] i_instruction,
+        output wire [PC_SIZE - 1 : 0]          o_next_seq_pc,
+        output wire [INSTRUCTION_SIZE - 1 : 0] o_instruction
+    );
+
+    reg [PC_SIZE - 1 : 0]          next_seq_pc;
+    reg [INSTRUCTION_SIZE - 1 : 0] instruction;
+
+    always @(posedge i_clk or posedge i_reset) 
+    begin
+        if (i_reset)
+        begin
+            next_seq_pc <= 0;
+            instruction <= 0;
+        end
+        else if (i_enable)
+        begin
+            next_seq_pc <= next_seq_pc;
+            instruction <= instruction;
+        end
+    end
+
+    assign o_next_seq_pc = next_seq_pc;
+    assign o_instruction = instruction;
+
+endmodule
