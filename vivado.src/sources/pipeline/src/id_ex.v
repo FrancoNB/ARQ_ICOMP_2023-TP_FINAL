@@ -52,7 +52,7 @@ module id_ex
         output wire [BUS_SIZE - 1 : 0] o_shamt_ext_unsigned,
         output wire [BUS_SIZE - 1 : 0] o_inm_ext_signed,
         output wire [BUS_SIZE - 1 : 0] o_inm_upp,
-        output wire [BUS_SIZE - 1 : 0] o_inm_ext_unsigned,
+        output wire [BUS_SIZE - 1 : 0] o_inm_ext_unsigned
     );
 
     reg [2 : 0]            mem_rd_src;

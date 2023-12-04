@@ -29,8 +29,8 @@ module if_id
             end
         else if (i_enable)
             begin
-                next_seq_pc <= next_seq_pc;
-                instruction <= instruction;
+                next_seq_pc <= i_next_seq_pc;
+                instruction <= i_instruction;
             end
     end
 

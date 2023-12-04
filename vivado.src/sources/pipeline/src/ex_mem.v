@@ -58,14 +58,14 @@ module ex_mem
             end
         else if (i_enable)
             begin
-                mem_rd_src <= mem_rd_src;
-                mem_wr_src <= mem_wr_src;
-                mem_write  <= mem_write;
-                wb         <= wb;
-                mem_to_reg <= mem_to_reg;
-                bus_b      <= bus_b;
-                alu_result <= alu_result;
-                addr_wr    <= addr_wr;
+                mem_rd_src <= i_mem_rd_src;
+                mem_wr_src <= i_mem_wr_src;
+                mem_write  <= i_mem_write;
+                wb         <= i_wb;
+                mem_to_reg <= i_mem_to_reg;
+                bus_b      <= i_bus_b;
+                alu_result <= i_alu_result;
+                addr_wr    <= i_addr_wr;
             end
     end
 
