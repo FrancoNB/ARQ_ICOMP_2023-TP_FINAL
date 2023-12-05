@@ -39,6 +39,7 @@ module id
         output wire [4 : 0]                                  o_rt,
         output wire [4 : 0]                                  o_rd,
         output wire [5 : 0]                                  o_funct,
+        output wire [5 : 0]                                  o_op,
         output wire [BUS_SIZE - 1 : 0]                       o_shamt_ext_unsigned,
         output wire [BUS_SIZE - 1 : 0]                       o_inm_ext_signed,
         output wire [BUS_SIZE - 1 : 0]                       o_inm_upp,
@@ -52,7 +53,6 @@ module id
     wire [1 : 0]            jmp_ctrl;
     wire [18 : 0]           main_ctrl_regs;
     wire [15 : 0]           next_stage_ctrl_regs; 
-    wire [5 : 0]            op;
     wire [4 : 0]            shamt;
     wire [15 : 0]           inm;
     wire [25 : 0]           dir;
@@ -63,7 +63,6 @@ module id
     wire [BUS_SIZE - 1 : 0] jump_pc_dir;
     
     /* -------------------------- Assignment internal wires -------------------------- */
-    assign op            = i_instruction[31:26];
     assign dir           = i_instruction[25:0];
     assign inm           = i_instruction[15:0];
     assign shamt         = i_instruction[10:6];
@@ -71,6 +70,7 @@ module id
     assign jump_pc_dir   = { i_next_seq_pc[31:28], dir_ext_unsigned_shifted[27:0] };
 
     /* -------------------------- Assignment output wires -------------------------- */
+    assign o_op          = i_instruction[31:26];
     assign o_rs          = i_instruction[25:21];
     assign o_rt          = i_instruction[20:16];
     assign o_rd          = i_instruction[15:11];
@@ -110,7 +110,7 @@ module id
     main_control main_control_unit 
     (
         .i_bus_a_is_zero (is_zero_result),
-        .i_op            (op),
+        .i_op            (o_op),
         .i_funct         (o_funct),
         .o_ctrl_regs     (main_ctrl_regs)
     );

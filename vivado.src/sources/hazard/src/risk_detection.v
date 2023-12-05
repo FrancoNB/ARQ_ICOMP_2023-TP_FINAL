@@ -13,7 +13,7 @@ module risk_detection
         input  wire [5 : 0] i_id_ex_op,
         output wire         o_not_load,
         output wire         o_halt,
-        output wire         o_reg_src
+        output wire         o_ctr_reg_src
     );
     
     wire         load_hazard;
@@ -34,8 +34,8 @@ module risk_detection
                                          i_id_ex_op == `CODE_OP_ORI  || i_id_ex_op == `CODE_OP_XORI ||
                                          i_id_ex_op == `CODE_OP_SLTI);
     
-    assign o_halt     = i_if_id_op == `CODE_OP_HALT;
-    assign o_not_load = load_hazard || aritmetic_hazard || aritmetic_inmediate_hazard;
-    assign o_reg_src  = o_not_load;
+    assign o_halt        = i_if_id_op == `CODE_OP_HALT;
+    assign o_not_load    = load_hazard || aritmetic_hazard || aritmetic_inmediate_hazard;
+    assign o_ctr_reg_src = o_not_load;
 
 endmodule

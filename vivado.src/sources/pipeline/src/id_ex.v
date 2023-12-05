@@ -28,6 +28,7 @@ module id_ex
         input  wire [4 : 0]            i_rt,
         input  wire [4 : 0]            i_rd,
         input  wire [5 : 0]            i_funct,
+        input  wire [5 : 0]            i_op,
         input  wire [BUS_SIZE - 1 : 0] i_shamt_ext_unsigned,
         input  wire [BUS_SIZE - 1 : 0] i_inm_ext_signed,
         input  wire [BUS_SIZE - 1 : 0] i_inm_upp,
@@ -49,6 +50,7 @@ module id_ex
         output wire [4 : 0]            o_rt,
         output wire [4 : 0]            o_rd,
         output wire [5 : 0]            o_funct,
+        output wire [5 : 0]            o_op,
         output wire [BUS_SIZE - 1 : 0] o_shamt_ext_unsigned,
         output wire [BUS_SIZE - 1 : 0] o_inm_ext_signed,
         output wire [BUS_SIZE - 1 : 0] o_inm_upp,
@@ -70,6 +72,7 @@ module id_ex
     reg [4 : 0]            rt;
     reg [4 : 0]            rd;
     reg [5 : 0]            funct;
+    reg [5 : 0]            op;
     reg [BUS_SIZE - 1 : 0] shamt_ext_unsigned;
     reg [BUS_SIZE - 1 : 0] inm_ext_signed;
     reg [BUS_SIZE - 1 : 0] inm_upp;
@@ -94,6 +97,7 @@ module id_ex
                 rt                 <= `CLEAR(5);
                 rd                 <= `CLEAR(5);
                 funct              <= `CLEAR(6);
+                op                 <= `CLEAR(6);
                 shamt_ext_unsigned <= `CLEAR(BUS_SIZE);
                 inm_ext_signed     <= `CLEAR(BUS_SIZE);
                 inm_upp            <= `CLEAR(BUS_SIZE);
@@ -116,6 +120,7 @@ module id_ex
                 rt                 <= i_rt;
                 rd                 <= i_rd;
                 funct              <= i_funct;
+                op                 <= i_op;
                 shamt_ext_unsigned <= i_shamt_ext_unsigned;
                 inm_ext_signed     <= i_inm_ext_signed;
                 inm_upp            <= i_inm_upp;
@@ -138,6 +143,7 @@ module id_ex
     assign o_rt                 = rt;
     assign o_rd                 = rd;
     assign o_funct              = funct;
+    assign o_op                 = op;
     assign o_shamt_ext_unsigned = shamt_ext_unsigned;
     assign o_inm_ext_signed     = inm_ext_signed;
     assign o_inm_upp            = inm_upp;

@@ -38,6 +38,7 @@ module tb_id;
     wire [4 : 0]                                  o_rt;
     wire [4 : 0]                                  o_rd;
     wire [5 : 0]                                  o_funct;
+    wire [5 : 0]                                  o_op;
     wire [BUS_SIZE - 1 : 0]                       o_shamt_ext_unsigned;
     wire [BUS_SIZE - 1 : 0]                       o_inm_ext_signed;
     wire [BUS_SIZE - 1 : 0]                       o_inm_upp;
@@ -79,6 +80,7 @@ module tb_id;
         .o_rt                 (o_rt),
         .o_rd                 (o_rd),
         .o_funct              (o_funct),
+        .o_op                 (o_op),
         .o_shamt_ext_unsigned (o_shamt_ext_unsigned),
         .o_inm_ext_signed     (o_inm_ext_signed),
         .o_inm_upp            (o_inm_upp),
@@ -210,11 +212,12 @@ module tb_id;
 
                         if (o_rs               === i_instruction[25:21] && o_rt                 === i_instruction[20:16] && 
                             o_rd               === i_instruction[15:11] && o_funct              === i_instruction[5:0]   && 
+                            o_op               === i_instruction[31:26] &&
                             o_inm_ext_unsigned === inm_ext_unsigned     && o_shamt_ext_unsigned === shamt_ext_unsigned   && 
                             o_inm_upp          === inm_upp              && o_inm_ext_signed     === inm_ext_signed       && 
                             o_next_pc_src      === valid_out[18]        && o_reg_dst            === valid_out[15:14]     && 
                             o_alu_src_a        === valid_out[13]        && o_alu_src_b          === valid_out[12:11]     &&
-                             o_alu_op          === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
+                            o_alu_op           === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
                             o_mem_wr_src       === valid_out[4:3]       && o_mem_write          === valid_out[2]         && 
                             o_wb               === valid_out[1]         && o_mem_to_reg         === valid_out[0])
                             $display("TEST %0d - %0d PASS", i, j);
@@ -237,6 +240,9 @@ module tb_id;
                                 $display("/* ");
                                 $display("/* Valid_funct               : %b", i_instruction[5:0]);
                                 $display("/* Obtain_funct              : %b", o_funct);
+                                $display("/* ");
+                                $display("/* Valid_op                  : %b", i_instruction[31:26]);
+                                $display("/* Obtain_op                 : %b", o_op);
                                 $display("/* ");
                                 $display("/* Valid_imm_ext_signed      : %b", inm_ext_signed);
                                 $display("/* Obtain_imm_ext_signed     : %b", o_inm_ext_signed);
@@ -273,11 +279,12 @@ module tb_id;
 
                     if (o_rs               === i_instruction[25:21] && o_rt                 === i_instruction[20:16] && 
                         o_rd               === i_instruction[15:11] && o_funct              === i_instruction[5:0]   && 
+                        o_op               === i_instruction[31:26] &&
                         o_inm_ext_unsigned === inm_ext_unsigned     && o_shamt_ext_unsigned === shamt_ext_unsigned   && 
                         o_inm_upp          === inm_upp              && o_inm_ext_signed     === inm_ext_signed       && 
                         o_next_pc_src      === valid_out[18]        && o_reg_dst            === valid_out[15:14]     && 
                         o_alu_src_a        === valid_out[13]        && o_alu_src_b          === valid_out[12:11]     &&
-                         o_alu_op          === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
+                        o_alu_op           === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
                         o_mem_wr_src       === valid_out[4:3]       && o_mem_write          === valid_out[2]         && 
                         o_wb               === valid_out[1]         && o_mem_to_reg         === valid_out[0])
                         $display("TEST %0d PASS", i);
@@ -300,6 +307,9 @@ module tb_id;
                             $display("/* ");
                             $display("/* Valid_funct               : %b", i_instruction[5:0]);
                             $display("/* Obtain_funct              : %b", o_funct);
+                            $display("/* ");
+                            $display("/* Valid_op                  : %b", i_instruction[31:26]);
+                            $display("/* Obtain_op                 : %b", o_op);
                             $display("/* ");
                             $display("/* Valid_imm_ext_signed      : %b", inm_ext_signed);
                             $display("/* Obtain_imm_ext_signed     : %b", o_inm_ext_signed);
