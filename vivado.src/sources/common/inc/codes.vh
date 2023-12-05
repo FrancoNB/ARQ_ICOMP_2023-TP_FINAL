@@ -4,6 +4,7 @@
     /** --------------------------- Codes for OP (instruction[31:26]) --------------------------- **/
 
     `define CODE_OP_R_TYPE  6'b000000 // R-Type instructions                             
+    `define CODE_OP_HALT    6'b111111 // Halt instruction                      
 
     `define CODE_OP_BEQ     6'b000100 // Branch if equal instruction                     
     `define CODE_OP_BNE     6'b000101 // Branch if not equal instruction                     

@@ -11,6 +11,6 @@
     `define CLEAR(len) { len {`LOW} }
     `define SET  (len) { len {`HIGH} }
 
-    `define INSTRUCTION_HALT { `ARQUITECTURE_BITS {`LOW} }
+    `define INSTRUCTION_HALT { `ARQUITECTURE_BITS {`HIGH} }
     `define INSTRUCTION_NOP  { `ARQUITECTURE_BITS {`LOW} }
 `endif // __COMMON_VH__
