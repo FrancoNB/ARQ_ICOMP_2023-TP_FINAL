@@ -79,7 +79,7 @@ module tb_alu_control;
         i_alu_op = `CODE_ALU_CTR_R_TYPE;
         i_funct  = `CODE_FUNCT_ADDU;
         #10;
-        if (o_alu_ctr === `CODE_ALU_EX_NOP)
+        if (o_alu_ctr === `CODE_ALU_EX_ADDU)
             $display("TEST ADDU   PASSED");
         else
             $display("TEST ADDU   ERROR");
@@ -95,7 +95,7 @@ module tb_alu_control;
         i_alu_op = `CODE_ALU_CTR_R_TYPE;
         i_funct  = `CODE_FUNCT_SUBU;
         #10;
-        if (o_alu_ctr === `CODE_ALU_EX_NOP)
+        if (o_alu_ctr === `CODE_ALU_EX_SUBU)
             $display("TEST SUBU   PASSED");
         else
             $display("TEST SUBU   ERROR");

@@ -12,6 +12,7 @@ module id_ex
         input  wire                    i_reset,
         input  wire                    i_enable,
         // Control input signals
+        input  wire                    i_jmp_stop,
         input  wire [2 : 0]            i_mem_rd_src,
         input  wire [1 : 0]            i_mem_wr_src,
         input  wire                    i_mem_write,
@@ -19,7 +20,7 @@ module id_ex
         input  wire                    i_mem_to_reg,
         input  wire [1 : 0]            i_reg_dst,
         input  wire                    i_alu_src_a,
-        input  wire [1 : 0]            i_alu_src_b,
+        input  wire [2 : 0]            i_alu_src_b,
         input  wire [2 : 0]            i_alu_op,
         // Data input signals
         input  wire [BUS_SIZE - 1 : 0] i_bus_a,
@@ -33,7 +34,9 @@ module id_ex
         input  wire [BUS_SIZE - 1 : 0] i_inm_ext_signed,
         input  wire [BUS_SIZE - 1 : 0] i_inm_upp,
         input  wire [BUS_SIZE - 1 : 0] i_inm_ext_unsigned,
+        input  wire [BUS_SIZE - 1 : 0] i_next_seq_pc,
         // Control output signals
+        output wire                    o_jmp_stop,
         output wire [2 : 0]            o_mem_rd_src,
         output wire [1 : 0]            o_mem_wr_src,
         output wire                    o_mem_write,
@@ -41,7 +44,7 @@ module id_ex
         output wire                    o_mem_to_reg,
         output wire [1 : 0]            o_reg_dst,
         output wire                    o_alu_src_a,
-        output wire [1 : 0]            o_alu_src_b,
+        output wire [2 : 0]            o_alu_src_b,
         output wire [2 : 0]            o_alu_op,
         // Data output signals
         output wire [BUS_SIZE - 1 : 0] o_bus_a,
@@ -54,9 +57,11 @@ module id_ex
         output wire [BUS_SIZE - 1 : 0] o_shamt_ext_unsigned,
         output wire [BUS_SIZE - 1 : 0] o_inm_ext_signed,
         output wire [BUS_SIZE - 1 : 0] o_inm_upp,
-        output wire [BUS_SIZE - 1 : 0] o_inm_ext_unsigned
+        output wire [BUS_SIZE - 1 : 0] o_inm_ext_unsigned,
+        output wire [BUS_SIZE - 1 : 0] o_next_seq_pc
     );
 
+    reg                    jmp_stop;
     reg [2 : 0]            mem_rd_src;
     reg [1 : 0]            mem_wr_src;
     reg                    mem_write;
@@ -64,7 +69,7 @@ module id_ex
     reg                    mem_to_reg;
     reg [1 : 0]            reg_dst;
     reg                    alu_src_a;
-    reg [1 : 0]            alu_src_b;
+    reg [2 : 0]            alu_src_b;
     reg [2 : 0]            alu_op;
     reg [BUS_SIZE - 1 : 0] bus_a;
     reg [BUS_SIZE - 1 : 0] bus_b;
@@ -77,11 +82,13 @@ module id_ex
     reg [BUS_SIZE - 1 : 0] inm_ext_signed;
     reg [BUS_SIZE - 1 : 0] inm_upp;
     reg [BUS_SIZE - 1 : 0] inm_ext_unsigned;
+    reg [BUS_SIZE - 1 : 0] next_seq_pc;
 
     always @(posedge i_clk or posedge i_reset)
     begin
         if (i_reset)
             begin
+                jmp_stop           <= `LOW;
                 mem_rd_src         <= `CLEAR(3);
                 mem_wr_src         <= `CLEAR(2);
                 mem_write          <= `LOW;
@@ -89,7 +96,7 @@ module id_ex
                 mem_to_reg         <= `LOW;
                 reg_dst            <= `CLEAR(2);
                 alu_src_a          <= `LOW;
-                alu_src_b          <= `CLEAR(2);
+                alu_src_b          <= `CLEAR(3);
                 alu_op             <= `CLEAR(3);
                 bus_a              <= `CLEAR(BUS_SIZE);
                 bus_b              <= `CLEAR(BUS_SIZE);
@@ -102,9 +109,11 @@ module id_ex
                 inm_ext_signed     <= `CLEAR(BUS_SIZE);
                 inm_upp            <= `CLEAR(BUS_SIZE);
                 inm_ext_unsigned   <= `CLEAR(BUS_SIZE);
+                next_seq_pc        <= `CLEAR(BUS_SIZE);
             end
         else if (i_enable)
             begin
+                jmp_stop           <= i_jmp_stop;
                 mem_rd_src         <= i_mem_rd_src;
                 mem_wr_src         <= i_mem_wr_src;
                 mem_write          <= i_mem_write;
@@ -125,9 +134,11 @@ module id_ex
                 inm_ext_signed     <= i_inm_ext_signed;
                 inm_upp            <= i_inm_upp;
                 inm_ext_unsigned   <= i_inm_ext_unsigned;
+                next_seq_pc        <= i_next_seq_pc;
             end
     end
 
+    assign o_jmp_stop           = jmp_stop;
     assign o_mem_rd_src         = mem_rd_src;
     assign o_mem_wr_src         = mem_wr_src;
     assign o_mem_write          = mem_write;
@@ -148,5 +159,6 @@ module id_ex
     assign o_inm_ext_signed     = inm_ext_signed;
     assign o_inm_upp            = inm_upp;
     assign o_inm_ext_unsigned   = inm_ext_unsigned;
+    assign o_next_seq_pc        = next_seq_pc;
 
 endmodule

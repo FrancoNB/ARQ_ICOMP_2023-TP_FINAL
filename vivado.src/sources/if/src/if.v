@@ -19,6 +19,7 @@ module _if
         input  wire                    i_write_mem,
         input  wire [BUS_SIZE - 1 : 0] i_instruction,
         input  wire [PC_SIZE - 1 : 0]  i_next_not_seq_pc,
+        input  wire [PC_SIZE - 1 : 0]  i_next_seq_pc,
         output wire                    o_full_mem,
         output wire                    o_empty_mem,
         output wire [PC_SIZE - 1 : 0]  o_instruction,
@@ -29,7 +30,6 @@ module _if
 
     wire [PC_SIZE - 1 : 0]  next_pc;
     wire [PC_SIZE - 1 : 0]  pc;
-    wire [BUS_SIZE - 1 : 0] instruction;
 
     mux 
     #(
@@ -39,20 +39,8 @@ module _if
     mux_2_unit_pc
     (
         .selector(i_next_pc_src),
-        .data_in ({i_next_not_seq_pc, o_next_seq_pc}),
+        .data_in ({i_next_not_seq_pc, i_next_seq_pc}),
         .data_out(next_pc)
-    );
-
-    mux 
-    #(
-        .CHANNELS(2), 
-        .BUS_SIZE(BUS_SIZE)
-    ) 
-    mux_2_unit_mem
-    (
-        .selector(i_next_pc_src),
-        .data_in ({`INSTRUCTION_NOP, instruction}),
-        .data_out(o_instruction)
     );
 
     adder 
@@ -97,7 +85,7 @@ module _if
         .i_instruction      (i_instruction),
         .o_full             (o_full_mem),
         .o_empty            (o_empty_mem),
-        .o_instruction      (instruction)
+        .o_instruction      (o_instruction)
     );
 
 

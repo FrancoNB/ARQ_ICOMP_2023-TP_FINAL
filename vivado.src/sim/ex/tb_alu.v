@@ -39,6 +39,15 @@ module tb_alu;
         else
             $display("TEST ADD  ERROR  -> Esperado: %b, Obtenido: %b", i_data_a + i_data_b, o_data);
 
+        i_ctr_code = `CODE_ALU_EX_ADDU;
+        i_data_a = $urandom;
+        i_data_b = $urandom;
+        #10;
+        if (o_data == i_data_a + i_data_b)
+            $display("TEST ADDU PASSED");
+        else
+            $display("TEST ADDU ERROR  -> Esperado: %b, Obtenido: %b", i_data_a + i_data_b, o_data);
+
         i_ctr_code = `CODE_ALU_EX_SUB;
         i_data_a = $urandom;
         i_data_b = $urandom;
@@ -47,6 +56,15 @@ module tb_alu;
             $display("TEST ADD  PASSED");
         else
             $display("TEST ADD  ERROR  -> Esperado: %b, Obtenido: %b", i_data_a - i_data_b, o_data);
+
+        i_ctr_code = `CODE_ALU_EX_SUBU;
+        i_data_a = $urandom;
+        i_data_b = $urandom;
+        #10;
+        if (o_data == i_data_a - i_data_b)
+            $display("TEST SUBU PASSED");
+        else
+            $display("TEST SUBU ERROR  -> Esperado: %b, Obtenido: %b", i_data_a - i_data_b, o_data);
 
         i_ctr_code = `CODE_ALU_EX_AND;
         i_data_a = $urandom;

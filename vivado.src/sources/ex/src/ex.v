@@ -9,7 +9,7 @@ module ex
     (
         // input controls wires
         input wire                     i_alu_src_a,
-        input wire  [1 : 0]            i_alu_src_b,
+        input wire  [2 : 0]            i_alu_src_b,
         input wire  [1 : 0]            i_reg_dst,
         input wire  [2 : 0]            i_alu_op,
         input wire  [1 : 0]            i_sc_src_a,
@@ -26,16 +26,17 @@ module ex
         input wire  [BUS_SIZE - 1 : 0] i_inm_ext_signed,
         input wire  [BUS_SIZE - 1 : 0] i_inm_upp,
         input wire  [BUS_SIZE - 1 : 0] i_inm_ext_unsigned,
+        input wire  [BUS_SIZE - 1 : 0] i_next_seq_pc,
         // output data wires
         output wire [4 : 0]            o_wb_addr,
         output wire [BUS_SIZE - 1 : 0] o_alu_result,
-        output wire [BUS_SIZE - 1 : 0] o_sc_bus_b
+        output wire [BUS_SIZE - 1 : 0] o_sc_bus_b,
+        output wire [BUS_SIZE - 1 : 0] o_sc_bus_a
     );
 
     /* -------------------------- Internal wires -------------------------- */
     wire [BUS_SIZE - 1 : 0] alu_data_a;
     wire [BUS_SIZE - 1 : 0] alu_data_b;
-    wire [BUS_SIZE - 1 : 0] sc_alu_data_a;
     wire [3 : 0]            alu_ctrl;
 
     /* -------------------------- ALU -------------------------- */
@@ -75,20 +76,20 @@ module ex
     mux_alu_src_data_a_unit
     (
         .selector (i_alu_src_a),
-        .data_in  ({sc_alu_data_a, i_shamt_ext_unsigned}),
+        .data_in  ({o_sc_bus_a, i_shamt_ext_unsigned}),
         .data_out (alu_data_a)
     );
 
     /* -------------------------- MUX ALU Data B -------------------------- */
     mux 
     #(
-        .CHANNELS(4), 
+        .CHANNELS(5), 
         .BUS_SIZE(BUS_SIZE)
     ) 
     mux_alu_src_data_b_unit
     (
         .selector (i_alu_src_b),
-        .data_in  ({o_sc_bus_b, i_inm_ext_unsigned, i_inm_ext_signed, i_inm_upp}),
+        .data_in  ({o_sc_bus_b, i_inm_ext_unsigned, i_inm_ext_signed, i_inm_upp, i_next_seq_pc}),
         .data_out (alu_data_b)
     );
 
@@ -102,7 +103,7 @@ module ex
     (
         .selector (i_sc_src_a),
         .data_in  ({i_sc_alu_result, i_sc_wb_result, i_bus_a}),
-        .data_out (sc_alu_data_a)
+        .data_out (o_sc_bus_a)
     );
 
     /* -------------------------- MUX Short circuit source B -------------------------- */

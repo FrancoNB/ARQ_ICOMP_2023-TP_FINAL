@@ -17,6 +17,7 @@ module tb_if;
     reg                               i_write_mem;
     reg  [`ARQUITECTURE_BITS - 1 : 0] i_instruction;
     reg  [`ARQUITECTURE_BITS - 1 : 0] i_next_not_seq_pc;
+    reg  [`ARQUITECTURE_BITS - 1 : 0] i_next_seq_pc;
     wire                              o_full_mem;
     wire                              o_empty_mem;
     wire [`ARQUITECTURE_BITS - 1 : 0] o_instruction;
@@ -40,6 +41,7 @@ module tb_if;
         .i_write_mem       (i_write_mem),
         .i_instruction     (i_instruction),
         .i_next_not_seq_pc (i_next_not_seq_pc),
+        .i_next_not_seq_pc (i_next_seq_pc),
         .o_full_mem        (o_full_mem),
         .o_empty_mem       (o_empty_mem),
         .o_instruction     (o_instruction),
@@ -57,6 +59,7 @@ module tb_if;
         i_halt = 0;
         i_not_load = 0;
         i_next_not_seq_pc = 0;
+        i_next_seq_pc = 0;
         i_write_mem = 0;
         i_next_pc_src = 0;
         i_enable = 0;
@@ -86,6 +89,7 @@ module tb_if;
         repeat(10)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+            i_next_seq_pc = i_next_seq_pc + 1;
         end
 
         $display("\nTEST 2:");
@@ -95,6 +99,7 @@ module tb_if;
         repeat(5)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
 
         $display("\nTEST 3:");
@@ -106,6 +111,7 @@ module tb_if;
         repeat(5)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
 
         $display("\nTEST 4:");
@@ -116,6 +122,7 @@ module tb_if;
         repeat(10)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
 
         $display("\nTEST 5:");
@@ -125,6 +132,7 @@ module tb_if;
         repeat(5)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
 
         $display("\nTEST 6:");
@@ -134,6 +142,7 @@ module tb_if;
         repeat(MEM_SIZE_IN_WORDS)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
         
         $display("\nTEST 7:");
@@ -145,6 +154,7 @@ module tb_if;
         repeat(5)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
         
         $display("\nTEST 8:");
@@ -154,6 +164,7 @@ module tb_if;
         repeat(5)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
+             i_next_seq_pc = i_next_seq_pc + 1;
         end
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD)

@@ -74,7 +74,7 @@ module tb_pc;
         end
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD);
-        if (o_pc != 0) $display("ERROR TEST 3"); else $display("PASS TEST 3");
+        if (o_pc != 10) $display("ERROR TEST 3"); else $display("PASS TEST 3");
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 1;
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 0;
@@ -111,7 +111,7 @@ module tb_pc;
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD);
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD);
-        if (o_pc != 0) $display("ERROR TEST 7"); else $display("PASS TEST 7");
+        if (o_pc != 45) $display("ERROR TEST 7"); else $display("PASS TEST 7");
         
         $finish;
     end

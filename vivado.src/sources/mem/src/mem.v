@@ -16,7 +16,6 @@ module mem
         input  wire [IO_BUS_SIZE - 1 : 0]                    i_alu_res,
         input  wire [IO_BUS_SIZE - 1 : 0]                    i_bus_b,
         output wire [IO_BUS_SIZE - 1 : 0]                    o_mem_rd,
-        output wire [IO_BUS_SIZE - 1 : 0]                    o_alu_result,
         output wire [2**MEM_ADDR_SIZE * IO_BUS_SIZE - 1 : 0] o_bus_debug
     );
 
@@ -43,8 +42,6 @@ module mem
 
     assign mem_out_data_byte     = mem_out_data[`BYTE_SIZE - 1 : 0];
     assign mem_out_data_halfword = mem_out_data[IO_BUS_SIZE / 2 - 1 : 0];
-
-    assign o_alu_result          = i_alu_res;
 
     data_memory
     #(

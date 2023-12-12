@@ -24,7 +24,7 @@ module instruction_memory
     localparam MAX_POINTER_DIR     = MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES;
 
     reg [`BITS_FOR_STATE_COUNTER_INSTRUCTION_MEMORY - 1 : 0] state, state_next;
-    reg [WORD_SIZE_IN_BITS - 1 : 0]                          instruction_output, instruction_output_next;
+    reg [WORD_SIZE_IN_BITS - 1 : 0]                          instruction_output;
     reg [POINTER_SIZE - 1 : 0]                               write_pointer, write_pointer_next;
     reg [MEM_SIZE_IN_BITS - 1 : 0]                           memory_buffer, memory_buffer_next;
     reg                                                      full, empty, full_next, empty_next;
@@ -44,27 +44,30 @@ module instruction_memory
             end 
         else 
             begin
-                state              <= state_next;
-                memory_buffer      <= memory_buffer_next;
-                write_pointer      <= write_pointer_next;
-                full               <= full_next;
-                empty              <= empty_next;
-                instruction_output <= instruction_output_next;
+                state         <= state_next;
+                memory_buffer <= memory_buffer_next;
+                write_pointer <= write_pointer_next;
+                full          <= full_next;
+                empty         <= empty_next;
             end
     end
 
-    always @* begin
-        state_next              = state;
-        memory_buffer_next      = memory_buffer;
-        write_pointer_next      = write_pointer;
-        full_next               = full;
-        empty_next              = empty;
-        instruction_output_next = instruction_output;
+    always @(negedge i_clk)
+    begin
+        write_operation_started = `LOW;
+    end
+
+    always @(*) begin
+        state_next         = state;
+        memory_buffer_next = memory_buffer;
+        write_pointer_next = write_pointer;
+        full_next          = full;
+        empty_next         = empty;
 
         case (state)
             `STATE_INSTRUCTION_MEMORY_WRITE: 
             begin
-                 if(~full && i_instruction_write && ~write_operation_started)
+                if(~full && i_instruction_write && ~write_operation_started)
                     begin
                         empty_next = `LOW;
                         write_operation_started = `HIGH;
@@ -73,8 +76,8 @@ module instruction_memory
 
                         if (i_instruction == `INSTRUCTION_HALT) 
                             begin     
-                                memory_buffer_next      = memory_buffer_next >> (WORD_SIZE_IN_BITS * (MAX_POINTER_DIR - write_pointer));
-                                state_next              = `STATE_INSTRUCTION_MEMORY_READ;
+                                memory_buffer_next = memory_buffer_next >> (WORD_SIZE_IN_BITS * ((MAX_POINTER_DIR - write_pointer) / WORD_SIZE_IN_BYTES ));
+                                state_next         = `STATE_INSTRUCTION_MEMORY_READ;
                             end 
                         else 
                             begin
@@ -86,14 +89,12 @@ module instruction_memory
                                     end
                             end
                     end
-                else
-                    write_operation_started = `LOW;
             end
 
             `STATE_INSTRUCTION_MEMORY_READ:
             begin
                 if (~empty)
-                    instruction_output_next = memory_buffer[i_pc * `BYTE_SIZE +: WORD_SIZE_IN_BITS];
+                    instruction_output = memory_buffer[i_pc * `BYTE_SIZE +: WORD_SIZE_IN_BITS];
             end
 
         endcase

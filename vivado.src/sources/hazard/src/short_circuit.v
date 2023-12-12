@@ -17,12 +17,12 @@ module short_circuit
         output wire [1 : 0]                 o_sc_data_b_src
     );
 
-    assign o_sc_data_a_src = i_ex_mem_addr == i_id_ex_rs && i_ex_mem_wb  ? 2'b10 : 
-                             i_mem_wb_addr == i_id_ex_rs && i_mem_wb_wb  ? 2'b01 : 
-                                                                           2'b00;
+    assign o_sc_data_a_src = i_ex_mem_addr == i_id_ex_rs && i_id_ex_rs != 0 && i_ex_mem_wb  ? `CODE_SC_DATA_SRC_EX_MEM : 
+                             i_mem_wb_addr == i_id_ex_rs && i_id_ex_rs != 0 && i_mem_wb_wb  ? `CODE_SC_DATA_SRC_MEM_WB : 
+                                                                                              `CODE_SC_DATA_SRC_ID_EX;
 
-    assign o_sc_data_b_src = i_ex_mem_addr == i_id_ex_rt && i_ex_mem_wb  ? 2'b10 :
-                             i_mem_wb_addr == i_id_ex_rt && i_mem_wb_wb  ? 2'b01 :
-                                                                           2'b00;
+    assign o_sc_data_b_src = i_ex_mem_addr == i_id_ex_rt && i_id_ex_rt != 0 && i_ex_mem_wb  ? `CODE_SC_DATA_SRC_EX_MEM :
+                             i_mem_wb_addr == i_id_ex_rt && i_id_ex_rt != 0 && i_mem_wb_wb  ? `CODE_SC_DATA_SRC_MEM_WB :
+                                                                                              `CODE_SC_DATA_SRC_ID_EX;
 
 endmodule

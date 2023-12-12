@@ -75,29 +75,32 @@
     `define CODE_MAIN_CTR_WB_DISABLE               1'b0   // Disable register write back
     `define CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT    1'b0   // Memory result to register
     `define CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT    1'b1   // ALU result to register
+    `define CODE_MAIN_CTR_MEM_TO_REG_NOTHING       1'bx   // Nothing to register
 
     /** --------------------------- Codes for ALU control --------------------------- **/
 
-    `define CODE_ALU_CTR_R_TYPE         3'b110 // R-Type instructions
-    `define CODE_ALU_CTR_LOAD_TYPE      3'b000 // Load instructions
-    `define CODE_ALU_CTR_STORE_TYPE     3'b000 // Store instructions
-    `define CODE_ALU_CTR_BRANCH_TYPE    3'b001 // Branch instructions
-    `define CODE_ALU_CTR_JUMP_TYPE      3'bxxx // Jump instructions
-    `define CODE_ALU_CTR_ADDI           3'b000 // Add immediate instruction
-    `define CODE_ALU_CTR_ANDI           3'b010 // And immediate instruction
-    `define CODE_ALU_CTR_ORI            3'b011 // Or immediate instruction
-    `define CODE_ALU_CTR_XORI           3'b100 // Xor immediate instruction
-    `define CODE_ALU_CTR_SLTI           3'b101 // Set less than immediate instruction
-    `define CODE_ALU_CTR_UNDEFINED      3'bxxx // Undefined instruction
+    `define CODE_ALU_CTR_R_TYPE            3'b110 // R-Type instructions
+    `define CODE_ALU_CTR_LOAD_TYPE         3'b000 // Load instructions
+    `define CODE_ALU_CTR_STORE_TYPE        3'b000 // Store instructions
+    `define CODE_ALU_CTR_BRANCH_TYPE       3'b001 // Branch instructions
+    `define CODE_ALU_CTR_JUMP_TYPE         3'b111 // Jump instructions
+    `define CODE_ALU_CTR_ADDI              3'b000 // Add immediate instruction
+    `define CODE_ALU_CTR_ANDI              3'b010 // And immediate instruction
+    `define CODE_ALU_CTR_ORI               3'b011 // Or immediate instruction
+    `define CODE_ALU_CTR_XORI              3'b100 // Xor immediate instruction
+    `define CODE_ALU_CTR_SLTI              3'b101 // Set less than immediate instruction
+    `define CODE_ALU_CTR_UNDEFINED         3'bxxx // Undefined instruction
 
-    `define CODE_ALU_CTR_SRC_A_SHAMT      1'b0  // Shamt
-    `define CODE_ALU_CTR_SRC_A_BUS_A      1'b1  // Bus A
+    `define CODE_ALU_CTR_SRC_A_SHAMT       1'b0  // Shamt
+    `define CODE_ALU_CTR_SRC_A_BUS_A       1'b1  // Bus A
+    `define CODE_ALU_CTR_SRC_A_NOTHING     1'bx // Nothing
     
-    `define CODE_ALU_CTR_SRC_B_BUS_B      2'b00  // Bus B
-    `define CODE_ALU_CTR_SRC_B_SIG_INM    2'b01  // Sign immediate
-    `define CODE_ALU_CTR_SRC_B_USIG_INM   2'b10  // Unsigned immediate
-    `define CODE_ALU_CTR_SRC_B_UPPER_INM  2'b11  // Upper immediate
-    `define CODE_ALU_CTR_SRC_B_NOTHING    2'bxx  // Nothing
+    `define CODE_ALU_CTR_SRC_B_NEXT_SEQ_PC 3'b000  // Next sequential PC
+    `define CODE_ALU_CTR_SRC_B_UPPER_INM   3'b001  // Upper immediate
+    `define CODE_ALU_CTR_SRC_B_SIG_INM     3'b010  // Sign immediate
+    `define CODE_ALU_CTR_SRC_B_USIG_INM    3'b011  // Unsigned immediate
+    `define CODE_ALU_CTR_SRC_B_BUS_B       3'b100  // Bus B
+    `define CODE_ALU_CTR_SRC_B_NOTHING     3'bxxx  // Nothing
     
     /** --------------------------- Codes for ALU excution --------------------------- **/
 
@@ -105,15 +108,25 @@
     `define CODE_ALU_EX_SRL          4'b0001 // Shift right logical
     `define CODE_ALU_EX_SRA          4'b0010 // Shift right arithmetic
     `define CODE_ALU_EX_ADD          4'b0011 // Sum
-    `define CODE_ALU_EX_SUB          4'b0100 // Substract 
-    `define CODE_ALU_EX_AND          4'b0101 // Logical and
-    `define CODE_ALU_EX_OR           4'b0110 // Logical or
-    `define CODE_ALU_EX_XOR          4'b0111 // Logical xor
-    `define CODE_ALU_EX_NOR          4'b1000 // Logical nor
-    `define CODE_ALU_EX_SLT          4'b1001 // Set if less than
-    `define CODE_ALU_EX_SLLV         4'b1010 // Shift left logical
-    `define CODE_ALU_EX_SRLV         4'b1011 // Shift right logical
-    `define CODE_ALU_EX_SRAV         4'b1100 // Shift right arithmetic
-    `define CODE_ALU_EX_NOP          4'b1111 // Not operation
+    `define CODE_ALU_EX_ADDU         4'b0100 // Sum unsigned
+    `define CODE_ALU_EX_SUB          4'b0101 // Substract 
+    `define CODE_ALU_EX_SUBU         4'b0110 // Substract unsigned
+    `define CODE_ALU_EX_AND          4'b0111 // Logical and
+    `define CODE_ALU_EX_OR           4'b1000 // Logical or
+    `define CODE_ALU_EX_XOR          4'b1001 // Logical xor
+    `define CODE_ALU_EX_NOR          4'b1010 // Logical nor
+    `define CODE_ALU_EX_SLT          4'b1011 // Set if less than
+    `define CODE_ALU_EX_SLLV         4'b1100 // Shift left logical
+    `define CODE_ALU_EX_SRLV         4'b1101 // Shift right logical
+    `define CODE_ALU_EX_SRAV         4'b1110 // Shift right arithmetic
+    `define CODE_ALU_EX_SC_B         4'b1111 // Short circuit B
+    `define CODE_ALU_EX_NOP          4'bxxxx // No operation
+
+    /** --------------------------- Codes for Short Circuit --------------------------- **/
+
+    `define CODE_SC_DATA_SRC_ID_EX   2'b00 // Data source is ID/EX
+    `define CODE_SC_DATA_SRC_MEM_WB  2'b01 // Data source is MEM/WB
+    `define CODE_SC_DATA_SRC_EX_MEM  2'b10 // Data source is EX/MEM
+    `define CODE_SC_DATA_SRC_NOTHING 2'bxx // Data source is nothing
 
 `endif // __CODES_VH__

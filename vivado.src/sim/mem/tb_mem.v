@@ -15,7 +15,6 @@ module tb_mem;
     reg  [IO_BUS_SIZE - 1 : 0]                    i_alu_res;
     reg  [IO_BUS_SIZE - 1 : 0]                    i_bus_b;
     wire [IO_BUS_SIZE - 1 : 0]                    o_mem_rd;
-    wire [IO_BUS_SIZE - 1 : 0]                    o_alu_result;
     wire [2**MEM_ADDR_SIZE * IO_BUS_SIZE - 1 : 0] o_bus_debug;
 
     mem
@@ -33,7 +32,6 @@ module tb_mem;
         .i_alu_res   (i_alu_res),
         .i_bus_b     (i_bus_b),
         .o_mem_rd    (o_mem_rd),
-        .o_alu_result(o_alu_result),
         .o_bus_debug (o_bus_debug)
     );
 

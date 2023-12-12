@@ -13,6 +13,6 @@ module mux
         output wire [BUS_SIZE - 1 : 0]            data_out 
     );
 
-    assign data_out = data_in >> BUS_SIZE * selector;      
+    assign data_out = selector !== { $clog2(CHANNELS) {1'bx} } ? data_in >> BUS_SIZE * selector : { BUS_SIZE {1'bz} };      
 
 endmodule

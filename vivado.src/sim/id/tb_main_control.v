@@ -6,20 +6,24 @@
 module tb_main_control;
 
     reg           i_bus_a_is_zero;
+    reg           i_instruction_is_nop;
     reg  [5 : 0]  i_op;
     reg  [5 : 0]  i_funct;
     wire [18 : 0] o_ctrl_regs;
 
     main_control dut 
     (
-        .i_bus_a_is_zero (i_bus_a_is_zero),
-        .i_op            (i_op),
-        .i_funct         (i_funct),
-        .o_ctrl_regs     (o_ctrl_regs)
+        .i_bus_a_is_zero      (i_bus_a_is_zero),
+        .i_instruction_is_nop (i_instruction_is_nop),
+        .i_op                 (i_op),
+        .i_funct              (i_funct),
+        .o_ctrl_regs          (o_ctrl_regs)
     );
 
     initial 
     begin
+        i_instruction_is_nop = `LOW;
+        
         i_op    = `CODE_OP_R_TYPE;
         i_funct = `CODE_FUNCT_ADD;
         #10;

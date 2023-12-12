@@ -20,12 +20,11 @@ module registers_bank
         output wire [REGISTERS_BANK_SIZE * REGISTERS_SIZE - 1 : 0] o_bus_debug
     );
     
-    reg [REGISTERS_SIZE - 1 : 0]                       registers [REGISTERS_BANK_SIZE - 1 : 0];
-    reg [REGISTERS_SIZE - 1 : 0]                       bus_a, bus_b;
+    reg [REGISTERS_SIZE - 1 : 0] registers [REGISTERS_BANK_SIZE - 1 : 0];
     
     integer i = 0;
     
-    always @(posedge i_clk or posedge i_reset) 
+    always @(negedge i_clk or posedge i_reset) 
     begin
         if (i_reset)
             begin
@@ -39,14 +38,8 @@ module registers_bank
             end
     end
 
-    always @ (negedge i_clk)
-    begin
-        bus_a <= registers[i_addr_a];
-        bus_b <= registers[i_addr_b];
-    end
-
-    assign o_bus_a     = bus_a;
-    assign o_bus_b     = bus_b;
+    assign o_bus_a = registers[i_addr_a];
+    assign o_bus_b = registers[i_addr_b];
 
     generate
         genvar j;

@@ -4,7 +4,7 @@
 
 module if_id
     #(
-        parameter PC_SIZE  = `DEFAULT_PC_SIZE,
+        parameter PC_SIZE          = `DEFAULT_PC_SIZE,
         parameter INSTRUCTION_SIZE = `DEFAULT_ID_INSTRUCTION_SIZE
     )
     (
