@@ -39,7 +39,7 @@ module tb_alu_control;
         i_alu_op = `CODE_ALU_CTR_R_TYPE;
         i_funct  = `CODE_FUNCT_JALR;
         #10;
-        if (o_alu_ctr === `CODE_ALU_EX_NOP)
+        if (o_alu_ctr === `CODE_ALU_EX_SC_B)
             $display("TEST JALR   PASSED");
         else
             $display("TEST JALR   ERROR");
@@ -182,7 +182,7 @@ module tb_alu_control;
 
         i_alu_op = `CODE_ALU_CTR_BRANCH_TYPE;
         #10;
-        if (o_alu_ctr === `CODE_ALU_EX_SUB)
+        if (o_alu_ctr === `CODE_ALU_EX_NOP)
             $display("TEST BRANCH PASSED");
         else
             $display("TEST BRANCH ERROR");
@@ -224,7 +224,7 @@ module tb_alu_control;
 
         i_alu_op = `CODE_ALU_CTR_JUMP_TYPE;
         #10;
-        if (o_alu_ctr === `CODE_ALU_EX_NOP)
+        if (o_alu_ctr === `CODE_ALU_EX_SC_B)
             $display("TEST JUMP   PASSED");
         else
             $display("TEST JUMP   ERROR");

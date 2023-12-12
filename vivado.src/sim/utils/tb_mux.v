@@ -64,6 +64,13 @@ module tb_mux;
         else 
             $display("TEST 2 PASS.");
 
+        selector_2 = 1'bx;
+        #10;
+        if (data_out_2 !== { `ARQUITECTURE_BITS {1'bz} })
+            $display("TEST 3 NO PASS. data_out_2 = %b, expected = %b", data_out_2, { `ARQUITECTURE_BITS {1'bz} });
+        else 
+            $display("TEST 3 PASS.");
+
         $display("Comprobando el mux de 4 canales...");
 
         for (i = 0; i < CHANNELS_4; i = i + 1)
@@ -72,31 +79,38 @@ module tb_mux;
         selector_4 = 0;
         #10;
         if (data_out_4 !== data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS])
-            $display("TEST 3 NO PASS. data_out_4 = %b, expected = %b", data_out_4, data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS]);
-        else 
-            $display("TEST 3 PASS.");
-
-        selector_4 = 1;
-        #10;
-        if (data_out_4 !== data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS])
             $display("TEST 4 NO PASS. data_out_4 = %b, expected = %b", data_out_4, data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS]);
         else 
             $display("TEST 4 PASS.");
 
-        selector_4 = 2;
+        selector_4 = 1;
         #10;
         if (data_out_4 !== data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS])
             $display("TEST 5 NO PASS. data_out_4 = %b, expected = %b", data_out_4, data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS]);
         else 
             $display("TEST 5 PASS.");
-        
-        selector_4 = 3;
+
+        selector_4 = 2;
         #10;
         if (data_out_4 !== data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS])
             $display("TEST 6 NO PASS. data_out_4 = %b, expected = %b", data_out_4, data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS]);
         else 
             $display("TEST 6 PASS.");
         
+        selector_4 = 3;
+        #10;
+        if (data_out_4 !== data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS])
+            $display("TEST 7 NO PASS. data_out_4 = %b, expected = %b", data_out_4, data_in_4[`ARQUITECTURE_BITS * selector_4 +: `ARQUITECTURE_BITS]);
+        else 
+            $display("TEST 7 PASS.");
+        
+        selector_4 = 1'bx;
+        #10;
+        if (data_out_4 !== { `ARQUITECTURE_BITS {1'bz} })
+            $display("TEST 8 NO PASS. data_out_4 = %b, expected = %b", data_out_4, { `ARQUITECTURE_BITS {1'bz} });
+        else 
+            $display("TEST 8 PASS.");
+
         $finish;
     end
 

@@ -10,7 +10,6 @@ module tb_registers_bank;
     reg                                                 i_clk;
     reg                                                 i_reset;
     reg                                                 i_write_enable; 
-    reg                                                 i_read_enable;
     reg  [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_a;
     reg  [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_b;
     reg  [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_wr;
@@ -29,7 +28,6 @@ module tb_registers_bank;
         .i_clk          (i_clk),
         .i_reset        (i_reset),
         .i_write_enable (i_write_enable),
-        .i_read_enable  (i_read_enable),
         .i_addr_a       (i_addr_a),
         .i_addr_b       (i_addr_b),
         .i_addr_wr      (i_addr_wr),
@@ -43,12 +41,13 @@ module tb_registers_bank;
 
     initial 
     begin
+        //Temer en cuenta que R0 no se escribe.
+        
         $srandom(616563);
         
         i_clk = 0;
         i_reset = 1;
         i_write_enable = 0;
-        i_read_enable = 0;
         i_addr_a = 9;
         i_addr_b = 0;
         i_addr_wr = 0;
@@ -66,7 +65,6 @@ module tb_registers_bank;
         end
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_write_enable = 0;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_read_enable = 1;
 
         repeat(5)
         begin
@@ -76,7 +74,7 @@ module tb_registers_bank;
                                                     i_addr_b = i_addr_b + 1;
         end
 
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_read_enable = 1;
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD);
 
         $finish;
     end

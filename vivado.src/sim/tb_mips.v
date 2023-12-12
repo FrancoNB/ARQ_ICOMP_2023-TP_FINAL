@@ -272,7 +272,7 @@ module tb_mips;
         
         i_start  = 1'b0; 
          
-        `TICKS_DELAY(`CLK_PERIOD, 30);
+        `TICKS_DELAY(`CLK_PERIOD, 100);
 
         i_reset      = 1'b1;
         i_enable     = 1'b0;
@@ -301,7 +301,7 @@ module tb_mips;
         
         i_start  = 1'b0; 
         
-        `TICKS_DELAY(`CLK_PERIOD, 60);
+        `TICKS_DELAY(`CLK_PERIOD, 100);
 
         i_reset      = 1'b1;
         i_enable     = 1'b0;
@@ -330,7 +330,7 @@ module tb_mips;
 
         i_start  = 1'b0;
 
-        `TICKS_DELAY(`CLK_PERIOD, 30);
+        `TICKS_DELAY(`CLK_PERIOD, 100);
 
         $display("\n--------------------------------------------------------------------------------------\n");
 

@@ -18,6 +18,8 @@ module tb_id;
     reg [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]     i_reg_addr_wr;
     reg [BUS_SIZE - 1 : 0]                        i_reg_bus_wr;
     reg [BUS_SIZE - 1 : 0]                        i_instruction;
+    reg [BUS_SIZE - 1 : 0]                        i_ex_bus_a;
+    reg [BUS_SIZE - 1 : 0]                        i_ex_bus_b;
     reg [PC_SIZE - 1 : 0]                         i_next_seq_pc;
     // Señales de control de salida    
     wire                                          o_next_pc_src;
@@ -28,7 +30,7 @@ module tb_id;
     wire                                          o_mem_to_reg;
     wire [1 : 0]                                  o_reg_dst;
     wire                                          o_alu_src_a;
-    wire [1 : 0]                                  o_alu_src_b;
+    wire [2 : 0]                                  o_alu_src_b;
     wire [2 : 0]                                  o_alu_op;
     // Señales de datos de salida    
     wire [BUS_SIZE - 1 : 0]                       o_bus_a;
@@ -62,6 +64,8 @@ module tb_id;
         .i_reg_addr_wr        (i_reg_addr_wr),
         .i_reg_bus_wr         (i_reg_bus_wr),
         .i_instruction        (i_instruction),
+        .i_ex_bus_a           (i_ex_bus_a),
+        .i_ex_bus_b           (i_ex_bus_b),
         .i_next_seq_pc        (i_next_seq_pc),
         .o_next_pc_src        (o_next_pc_src),
         .o_mem_rd_src         (o_mem_rd_src),
@@ -92,7 +96,7 @@ module tb_id;
     
     reg [5:0]              instructions [19:0];
     reg [5:0]              functs       [16:0];
-    reg [18:0]             valid_out;
+    reg [19:0]             valid_out;
 
     reg [BUS_SIZE - 1 : 0] shamt_ext_unsigned;
     reg [BUS_SIZE - 1 : 0] inm_ext_signed;
@@ -145,37 +149,40 @@ module tb_id;
     end
     
     task automatic set_valid_out();
-        case (instructions[i])
-            `CODE_OP_R_TYPE :
-                case (functs[j])
-                    `CODE_FUNCT_JR    : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_REG, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A, `CODE_ALU_CTR_SRC_B_BUS_B, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-                    `CODE_FUNCT_JALR  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_REG, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A, `CODE_ALU_CTR_SRC_B_BUS_B, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-                    `CODE_FUNCT_SLL   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_SHAMT, `CODE_ALU_CTR_SRC_B_BUS_B, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-                    `CODE_FUNCT_SRL   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_SHAMT, `CODE_ALU_CTR_SRC_B_BUS_B, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-                    `CODE_FUNCT_SRA   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_SHAMT, `CODE_ALU_CTR_SRC_B_BUS_B, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-                    default           : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_BUS_A, `CODE_ALU_CTR_SRC_B_BUS_B, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-                endcase
-            `CODE_OP_LW   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_WORD,          `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
-            `CODE_OP_SW   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_STORE_TYPE,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_WORD,     `CODE_MAIN_CTR_MEM_WRITE_ENABLE,  `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_BEQ  : valid_out = {  o_bus_a == 0 ? { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_BRANCH } : { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ, `CODE_MAIN_CTR_NOT_JMP }, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_BUS_B,     `CODE_ALU_CTR_BRANCH_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_BNE  : valid_out = {  o_bus_a != 0 ? { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_BRANCH } : { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ, `CODE_MAIN_CTR_NOT_JMP }, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_BUS_B,     `CODE_ALU_CTR_BRANCH_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_ADDI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_ADDI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_J    : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ,  `CODE_MAIN_CTR_JMP_DIR,                                                                                       `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_BUS_B,     `CODE_ALU_CTR_JUMP_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_JAL  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ,  `CODE_MAIN_CTR_JMP_DIR,                                                                                       `CODE_MAIN_CTR_REG_DST_GPR_31,  `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_BUS_B,     `CODE_ALU_CTR_JUMP_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_ANDI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_USIG_INM,  `CODE_ALU_CTR_ANDI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_ORI  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_USIG_INM,  `CODE_ALU_CTR_ORI,         `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_XORI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_USIG_INM,  `CODE_ALU_CTR_XORI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_SLTI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_SLTI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_LUI  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_UPPER_INM, `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_LB   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_SIG_BYTE,      `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
-            `CODE_OP_LBU  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_USIG_BYTE,     `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
-            `CODE_OP_LH   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_SIG_HALFWORD,  `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
-            `CODE_OP_LHU  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_USIG_HALFWORD, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
-            `CODE_OP_LWU  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_WORD,          `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
-            `CODE_OP_SB   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_STORE_TYPE,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_BYTE,     `CODE_MAIN_CTR_MEM_WRITE_ENABLE,  `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            `CODE_OP_SH   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_SIG_INM,   `CODE_ALU_CTR_STORE_TYPE,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_HALFWORD, `CODE_MAIN_CTR_MEM_WRITE_ENABLE,  `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-            default       : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                       `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,`CODE_ALU_CTR_SRC_B_NOTHING,   `CODE_ALU_CTR_UNDEFINED ,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
-        endcase
+        if (i_instruction != `INSTRUCTION_NOP)
+            case (instructions[i])
+                `CODE_OP_R_TYPE :
+                    case (functs[j])
+                        `CODE_FUNCT_JR    : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_REG, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_NOTHING, `CODE_ALU_CTR_SRC_B_NOTHING,     `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+                        `CODE_FUNCT_JALR  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_REG, `CODE_MAIN_CTR_REG_DST_GPR_31,  `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_NEXT_SEQ_PC, `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                        `CODE_FUNCT_SLL   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_SHAMT,   `CODE_ALU_CTR_SRC_B_BUS_B,       `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                        `CODE_FUNCT_SRL   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_SHAMT,   `CODE_ALU_CTR_SRC_B_BUS_B,       `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                        `CODE_FUNCT_SRA   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_SHAMT,   `CODE_ALU_CTR_SRC_B_BUS_B,       `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                        default           : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,     `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_RD,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_BUS_B,       `CODE_ALU_CTR_R_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                    endcase
+                `CODE_OP_LW   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_WORD,          `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
+                `CODE_OP_SW   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_STORE_TYPE,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_WORD,     `CODE_MAIN_CTR_MEM_WRITE_ENABLE,  `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+                `CODE_OP_BEQ  : valid_out = {  i_ex_bus_a == i_ex_bus_b ? { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_BRANCH } : { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ, `CODE_MAIN_CTR_NOT_JMP }, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_NOTHING, `CODE_ALU_CTR_SRC_B_NOTHING,     `CODE_ALU_CTR_BRANCH_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+                `CODE_OP_BNE  : valid_out = {  i_ex_bus_a != i_ex_bus_b ? { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ, `CODE_MAIN_CTR_JMP_BRANCH } : { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ, `CODE_MAIN_CTR_NOT_JMP }, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_NOTHING, `CODE_ALU_CTR_SRC_B_NOTHING,     `CODE_ALU_CTR_BRANCH_TYPE, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+                `CODE_OP_ADDI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_ADDI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_J    : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ,  `CODE_MAIN_CTR_JMP_DIR,                                                                                                `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_BUS_B,       `CODE_ALU_CTR_JUMP_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_JAL  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_NOT_SEQ,  `CODE_MAIN_CTR_JMP_DIR,                                                                                                `CODE_MAIN_CTR_REG_DST_GPR_31,  `CODE_ALU_CTR_SRC_A_NOTHING, `CODE_ALU_CTR_SRC_B_NEXT_SEQ_PC, `CODE_ALU_CTR_JUMP_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_ANDI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_USIG_INM,    `CODE_ALU_CTR_ANDI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_ORI  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_USIG_INM,    `CODE_ALU_CTR_ORI,         `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_XORI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_USIG_INM,    `CODE_ALU_CTR_XORI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_SLTI : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_SLTI,        `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_LUI  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_UPPER_INM,   `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_ALU_RESULT };
+                `CODE_OP_LB   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_SIG_BYTE,      `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
+                `CODE_OP_LBU  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_USIG_BYTE,     `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
+                `CODE_OP_LH   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_SIG_HALFWORD,  `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
+                `CODE_OP_LHU  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_USIG_HALFWORD, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
+                `CODE_OP_LWU  : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_RT,      `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_LOAD_TYPE,   `CODE_MAIN_CTR_MEM_RD_SRC_WORD,          `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_ENABLE,  `CODE_MAIN_CTR_MEM_TO_REG_MEM_RESULT };
+                `CODE_OP_SB   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_STORE_TYPE,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_BYTE,     `CODE_MAIN_CTR_MEM_WRITE_ENABLE,  `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+                `CODE_OP_SH   : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_BUS_A,   `CODE_ALU_CTR_SRC_B_SIG_INM,     `CODE_ALU_CTR_STORE_TYPE,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_HALFWORD, `CODE_MAIN_CTR_MEM_WRITE_ENABLE,  `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+                default       : valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ,      `CODE_MAIN_CTR_NOT_JMP,                                                                                                `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_NOTHING, `CODE_ALU_CTR_SRC_B_NOTHING,     `CODE_ALU_CTR_UNDEFINED ,  `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING,       `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING,  `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING    };
+            endcase
+        else
+            valid_out = { `CODE_MAIN_CTR_NEXT_PC_SRC_SEQ, `CODE_MAIN_CTR_NOT_JMP, `CODE_MAIN_CTR_REG_DST_NOTHING, `CODE_ALU_CTR_SRC_A_NOTHING, `CODE_ALU_CTR_SRC_B_NOTHING, `CODE_ALU_CTR_UNDEFINED, `CODE_MAIN_CTR_MEM_RD_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WR_SRC_NOTHING, `CODE_MAIN_CTR_MEM_WRITE_DISABLE, `CODE_MAIN_CTR_WB_DISABLE, `CODE_MAIN_CTR_MEM_TO_REG_NOTHING };
     endtask
 
     initial 
@@ -189,6 +196,8 @@ module tb_id;
         i_reg_bus_wr = 0;
         i_instruction = 0;
         i_next_seq_pc = 0;
+        i_ex_bus_a    = 0;
+        i_ex_bus_b    = 0;
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
 
@@ -198,8 +207,6 @@ module tb_id;
                 begin
                     repeat (17) 
                     begin
-                        set_valid_out();
-
                         i_instruction = $urandom; 
                         i_instruction = { instructions[i], i_instruction[19:0] , functs[j] };
 
@@ -208,6 +215,8 @@ module tb_id;
                         inm_upp = (inm_ext_signed << 16);
                         inm_ext_unsigned = { { 16 { 1'b0 } }, i_instruction[15:0] };
                         
+                        set_valid_out();
+                        
                         `TICKS_DELAY_1(`CLK_PERIOD);
 
                         if (o_rs               === i_instruction[25:21] && o_rt                 === i_instruction[20:16] && 
@@ -215,8 +224,8 @@ module tb_id;
                             o_op               === i_instruction[31:26] &&
                             o_inm_ext_unsigned === inm_ext_unsigned     && o_shamt_ext_unsigned === shamt_ext_unsigned   && 
                             o_inm_upp          === inm_upp              && o_inm_ext_signed     === inm_ext_signed       && 
-                            o_next_pc_src      === valid_out[18]        && o_reg_dst            === valid_out[15:14]     && 
-                            o_alu_src_a        === valid_out[13]        && o_alu_src_b          === valid_out[12:11]     &&
+                            o_next_pc_src      === valid_out[19]        && o_reg_dst            === valid_out[16:15]     && 
+                            o_alu_src_a        === valid_out[14]        && o_alu_src_b          === valid_out[13:11]     &&
                             o_alu_op           === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
                             o_mem_wr_src       === valid_out[4:3]       && o_mem_write          === valid_out[2]         && 
                             o_wb               === valid_out[1]         && o_mem_to_reg         === valid_out[0])
@@ -226,7 +235,7 @@ module tb_id;
                                 $display("/* --------------------------------------------------------------------------------");
                                 $display("/* TEST %0d - %0d ERROR", i, j);
                                 $display("/* ");
-                                $display("/* Valid_reg_out             : %b", { valid_out[18], valid_out[15:0] });
+                                $display("/* Valid_reg_out             : %b", { valid_out[19], valid_out[16:0] });
                                 $display("/* Obtain_reg_out            : %b", { o_next_pc_src, o_reg_dst, o_alu_src_a, o_alu_src_b, o_alu_op, o_mem_rd_src, o_mem_wr_src, o_mem_write, o_wb, o_mem_to_reg });
                                 $display("/* ");
                                 $display("/* Valid_rs                  : %b", i_instruction[25:21]);
@@ -265,8 +274,6 @@ module tb_id;
                 end
             else
                 begin
-                    set_valid_out();
-
                     i_instruction = $urandom;
                     i_instruction = { instructions[i], i_instruction[25:0]};
 
@@ -275,25 +282,27 @@ module tb_id;
                     inm_upp = (inm_ext_signed << 16);
                     inm_ext_unsigned = { { 16 { 1'b0 } }, i_instruction[15:0] };
                     
+                    set_valid_out();
+                    
                     `TICKS_DELAY_1(`CLK_PERIOD);
 
-                    if (o_rs               === i_instruction[25:21] && o_rt                 === i_instruction[20:16] && 
-                        o_rd               === i_instruction[15:11] && o_funct              === i_instruction[5:0]   && 
-                        o_op               === i_instruction[31:26] &&
-                        o_inm_ext_unsigned === inm_ext_unsigned     && o_shamt_ext_unsigned === shamt_ext_unsigned   && 
-                        o_inm_upp          === inm_upp              && o_inm_ext_signed     === inm_ext_signed       && 
-                        o_next_pc_src      === valid_out[18]        && o_reg_dst            === valid_out[15:14]     && 
-                        o_alu_src_a        === valid_out[13]        && o_alu_src_b          === valid_out[12:11]     &&
-                        o_alu_op           === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
-                        o_mem_wr_src       === valid_out[4:3]       && o_mem_write          === valid_out[2]         && 
-                        o_wb               === valid_out[1]         && o_mem_to_reg         === valid_out[0])
+                        if (o_rs               === i_instruction[25:21] && o_rt                 === i_instruction[20:16] && 
+                            o_rd               === i_instruction[15:11] && o_funct              === i_instruction[5:0]   && 
+                            o_op               === i_instruction[31:26] &&
+                            o_inm_ext_unsigned === inm_ext_unsigned     && o_shamt_ext_unsigned === shamt_ext_unsigned   && 
+                            o_inm_upp          === inm_upp              && o_inm_ext_signed     === inm_ext_signed       && 
+                            o_next_pc_src      === valid_out[19]        && o_reg_dst            === valid_out[16:15]     && 
+                            o_alu_src_a        === valid_out[14]        && o_alu_src_b          === valid_out[13:11]     &&
+                            o_alu_op           === valid_out[10:8]      && o_mem_rd_src         === valid_out[7:5]       &&
+                            o_mem_wr_src       === valid_out[4:3]       && o_mem_write          === valid_out[2]         && 
+                            o_wb               === valid_out[1]         && o_mem_to_reg         === valid_out[0])
                         $display("TEST %0d PASS", i);
                     else
                         begin
                             $display("/* --------------------------------------------------------------------------------");
-                            $display("/* TEST %0d - %0d ERROR", i, j);
+                            $display("/* TEST %0d ERROR", i);
                             $display("/* ");
-                            $display("/* Valid_reg_out             : %b", { valid_out[18], valid_out[15:0] });
+                            $display("/* Valid_reg_out             : %b", { valid_out[19], valid_out[16:0] });
                             $display("/* Obtain_reg_out            : %b", { o_next_pc_src, o_reg_dst, o_alu_src_a, o_alu_src_b, o_alu_op, o_mem_rd_src, o_mem_wr_src, o_mem_write, o_wb, o_mem_to_reg });
                             $display("/* ");
                             $display("/* Valid_rs                  : %b", i_instruction[25:21]);

@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "tb.vh"
+`include "codes.vh"
 
 module tb_short_circuit;
 
@@ -44,7 +45,7 @@ module tb_short_circuit;
         i_id_ex_rs    = random_addr;
         i_ex_mem_wb   = `HIGH;
         #10;
-        if (o_sc_data_a_src != 2'b10)
+        if (o_sc_data_a_src != `CODE_SC_DATA_SRC_EX_MEM)
             $display("TEST 1 ERROR");
         else
             $display("TEST 1 PASS");
@@ -54,7 +55,7 @@ module tb_short_circuit;
         i_id_ex_rt    = random_addr;
         i_mem_wb_wb   = `HIGH;
         #10;
-        if (o_sc_data_b_src != 2'b01)
+        if (o_sc_data_b_src != `CODE_SC_DATA_SRC_MEM_WB)
             $display("TEST 2 ERROR");
         else
             $display("TEST 2 PASS");
@@ -64,7 +65,7 @@ module tb_short_circuit;
         i_id_ex_rs    = random_addr;
         i_ex_mem_wb   = `LOW;
         #10;
-        if (o_sc_data_a_src != 2'b00)
+        if (o_sc_data_a_src != `CODE_SC_DATA_SRC_ID_EX)
             $display("TEST 3 ERROR");
         else
             $display("TEST 3 PASS");
@@ -74,7 +75,7 @@ module tb_short_circuit;
         i_id_ex_rt    = random_addr;
         i_mem_wb_wb   = `LOW;
         #10;
-        if (o_sc_data_b_src != 2'b00)
+        if (o_sc_data_b_src != `CODE_SC_DATA_SRC_ID_EX)
             $display("TEST 4 ERROR");
         else
             $display("TEST 4 PASS");
@@ -84,7 +85,7 @@ module tb_short_circuit;
         i_id_ex_rs    = random_addr;
         i_ex_mem_wb   = `HIGH;
         #10;
-        if (o_sc_data_a_src != 2'b10)
+        if (o_sc_data_a_src != `CODE_SC_DATA_SRC_EX_MEM)
             $display("TEST 5 ERROR");
         else
             $display("TEST 5 PASS");
@@ -94,10 +95,20 @@ module tb_short_circuit;
         i_id_ex_rt    = random_addr;
         i_mem_wb_wb   = `HIGH;
         #10;
-        if (o_sc_data_b_src != 2'b01)
+        if (o_sc_data_b_src != `CODE_SC_DATA_SRC_MEM_WB)
             $display("TEST 6 ERROR");
         else
             $display("TEST 6 PASS");
+
+        i_mem_wb_addr = 0;
+        i_id_ex_rt    = 0;
+        i_mem_wb_wb   = `HIGH;
+        i_ex_mem_wb   = `HIGH;
+        #10;
+        if (o_sc_data_b_src != `CODE_SC_DATA_SRC_ID_EX)
+            $display("TEST 7 ERROR");
+        else
+            $display("TEST 7 PASS");
 
         $finish;
     end

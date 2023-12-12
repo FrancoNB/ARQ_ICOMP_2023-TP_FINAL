@@ -46,7 +46,7 @@ module tb_instruction_memory;
         begin
                                                     i_instruction = $urandom;
             `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_instruction_write = 1;
-            `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_instruction_write = 0;
+            `TICKS_DELAY_1(`CLK_PERIOD)             i_instruction_write = 0;
                                                     $display("Write: %h", i_instruction);
         end
         

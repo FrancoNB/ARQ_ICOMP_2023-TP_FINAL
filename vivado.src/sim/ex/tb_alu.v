@@ -165,6 +165,15 @@ module tb_alu;
         else
             $display("TEST SRAV ERROR  -> Esperado: %b, Obtenido: %b", (i_data_a >>> i_data_b), o_data);
 
+        i_ctr_code = `CODE_ALU_EX_SC_B;
+        i_data_a = $urandom;
+        i_data_b = $urandom;
+        #10;
+        if (o_data == i_data_b)
+            $display("TEST SC_B PASSED");
+        else
+            $display("TEST SC_B ERROR  -> Esperado: %b, Obtenido: %b", i_data_b, o_data);
+
         i_ctr_code = `CODE_ALU_EX_NOP;
         i_data_a = $urandom;
         i_data_b = $urandom;
