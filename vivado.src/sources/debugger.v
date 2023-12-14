@@ -24,6 +24,7 @@ module debugger
         output wire                                  o_uart_wr,
         output wire                                  o_uart_rd,
         output wire                                  o_mips_instruction_wr,
+        output wire                                  o_mips_flush,
         output wire                                  o_mips_enabled,
         output wire                                  o_mips_start,
         output wire [UART_BUS_SIZE - 1 : 0]          o_uart_data_wr,
@@ -41,6 +42,7 @@ module debugger
 
     reg [3 : 0]                               state, state_next, return_state, return_state_next;
     reg                                       mips_enabled, mips_start, mips_instruction_wr;
+    reg                                       mips_flush, mips_flush_next;
     reg                                       mips_enabled_next, mips_start_next, mips_instruction_wr_next;
     reg                                       uart_wr, uart_rd;
     reg                                       uart_wr_next, uart_rd_next;
@@ -66,6 +68,7 @@ module debugger
                 mips_enabled           <= `LOW;
                 mips_start             <= `LOW;
                 mips_instruction_wr    <= `LOW;
+                mips_flush             <= `LOW;
                 uart_wr                <= `LOW;
                 uart_rd                <= `LOW;
                 uart_data_wr           <= `CLEAR(UART_BUS_SIZE);
@@ -86,6 +89,7 @@ module debugger
                 state                  <= state_next;
                 return_state           <= return_state_next;
                 mips_enabled           <= mips_enabled_next;
+                mips_flush             <= mips_flush_next;
                 mips_start             <= mips_start_next;
                 mips_instruction_wr    <= mips_instruction_wr_next;
                 uart_wr                <= uart_wr_next;
@@ -112,6 +116,7 @@ module debugger
         mips_enabled_next           = mips_enabled;
         mips_start_next             = mips_start;
         mips_instruction_wr_next    = mips_instruction_wr;
+        mips_flush_next             = mips_flush;
         uart_wr_next                = uart_wr;
         uart_rd_next                = uart_rd;
         uart_data_wr_next           = uart_data_wr;
@@ -157,7 +162,7 @@ module debugger
 
                             "S":
                             begin
-                                clk_counter_next        = { (UART_BUS_SIZE - 1) {1'b0}, 1'b1 };
+                                clk_counter_next        = { { (UART_BUS_SIZE - 1) { 1'b0 } }, 1'b1 };
                                 execution_by_steps_next = `HIGH;
                                 execution_debug_next    = `LOW;
                                 mips_enabled_next       = `HIGH;
@@ -167,7 +172,7 @@ module debugger
 
                             "D":
                             begin
-                                clk_counter_next        = { (UART_BUS_SIZE - 1) {1'b0}, 1'b1 };
+                                clk_counter_next        = { { (UART_BUS_SIZE - 1) { 1'b0 } }, 1'b1 };
                                 execution_by_steps_next = `LOW;
                                 execution_debug_next    = `HIGH;
                                 mips_enabled_next       = `HIGH;
@@ -317,7 +322,7 @@ module debugger
             begin
                 if (register_pointer < REGISTER_BANK_BUS_SIZE / REGISTER_SIZE)
                     begin
-                        uart_wr_buffer_next   = {`DEBUGGER_INFO_PREFIX, (execution_debug || execution_by_steps) ? clk_counter : `DEBUGGER_NO_CICLE_MASK , { (UART_BUS_SIZE - REGISTER_POINTER_SIZE) { 1'b0 }, register_pointer } , i_registers_conntent[register_pointer * REGISTER_SIZE +: REGISTER_SIZE] };
+                        uart_wr_buffer_next   = {`DEBUGGER_INFO_PREFIX, (execution_debug || execution_by_steps) ? clk_counter : `DEBUGGER_NO_CICLE_MASK , { { (UART_BUS_SIZE - REGISTER_POINTER_SIZE) { 1'b0 } }, register_pointer } , i_registers_conntent[register_pointer * REGISTER_SIZE +: REGISTER_SIZE] };
                         register_pointer_next = register_pointer + 1;
                         return_state_next     = `DEBUGGER_STATE_PRINT_REGISTERS;
                         state_next            = `DEBUGGER_STATE_UART_WR;
@@ -333,7 +338,7 @@ module debugger
             begin
                 if (memory_pointer < MEMORY_DATA_BUS_SIZE / MEMORY_SLOT_SIZE)
                     begin
-                        uart_wr_buffer_next = {`DEBUGGER_INFO_PREFIX, (execution_debug || execution_by_steps) ? clk_counter : `DEBUGGER_NO_CICLE_MASK , { (UART_BUS_SIZE - MEMORY_POINTER_SIZE) { 1'b0 }, memory_pointer } , i_memory_conntent[memory_pointer * MEMORY_SLOT_SIZE +: MEMORY_SLOT_SIZE] };
+                        uart_wr_buffer_next = {`DEBUGGER_INFO_PREFIX, (execution_debug || execution_by_steps) ? clk_counter : `DEBUGGER_NO_CICLE_MASK , { { (UART_BUS_SIZE - MEMORY_POINTER_SIZE) { 1'b0 } }, memory_pointer } , i_memory_conntent[memory_pointer * MEMORY_SLOT_SIZE +: MEMORY_SLOT_SIZE] };
                         memory_pointer_next = memory_pointer + 1;
                         return_state_next   = `DEBUGGER_STATE_PRINT_MEMORY_DATA;
                         state_next          = `DEBUGGER_STATE_UART_WR;
@@ -407,5 +412,14 @@ module debugger
 
         endcase
     end
+
+    assign o_uart_wr             = uart_wr;
+    assign o_uart_rd             = uart_rd;
+    assign o_mips_instruction    = mips_instruction;
+    assign o_mips_instruction_wr = mips_instruction_wr;
+    assign o_mips_flush          = mips_flush;
+    assign o_mips_enabled        = mips_enabled;
+    assign o_mips_start          = mips_start;
+    assign o_uart_data_wr        = uart_data_wr;
 
 endmodule
