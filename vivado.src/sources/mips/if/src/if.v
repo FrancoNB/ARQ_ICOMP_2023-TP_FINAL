@@ -11,12 +11,13 @@ module _if
     (
         input  wire                    i_clk, 
         input  wire                    i_reset,
-        input  wire                    i_start,
         input  wire                    i_halt,
         input  wire                    i_not_load,
         input  wire                    i_enable,
         input  wire                    i_next_pc_src,
         input  wire                    i_write_mem,
+        input  wire                    i_clear_mem,
+        input  wire                    i_flush,
         input  wire [BUS_SIZE - 1 : 0] i_instruction,
         input  wire [PC_SIZE - 1 : 0]  i_next_not_seq_pc,
         input  wire [PC_SIZE - 1 : 0]  i_next_seq_pc,
@@ -63,7 +64,8 @@ module _if
     (
         .i_clk     (i_clk),
         .i_reset   (i_reset),
-        .i_start   (i_start),
+        .i_flush   (i_flush),
+        .i_clear   (i_clear_mem),
         .i_halt    (i_halt),
         .i_not_load(i_not_load),
         .i_enable  (i_enable),
@@ -83,6 +85,7 @@ module _if
         .i_instruction_write(i_write_mem),
         .i_pc               (pc),
         .i_instruction      (i_instruction),
+        .i_clear            (i_clear_mem),
         .o_full             (o_full_mem),
         .o_empty            (o_empty_mem),
         .o_instruction      (o_instruction)

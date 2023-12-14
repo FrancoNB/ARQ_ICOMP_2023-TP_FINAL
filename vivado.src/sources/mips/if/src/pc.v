@@ -9,10 +9,11 @@ module pc
     (
         input  wire                   i_clk, 
         input  wire                   i_reset,
-        input  wire                   i_start,
         input  wire                   i_halt,
         input  wire                   i_not_load,
         input  wire                   i_enable,
+        input  wire                   i_flush,
+        input  wire                   i_clear,                        
         input  wire [PC_SIZE - 1 : 0] i_next_pc,
         output wire [PC_SIZE - 1 : 0] o_pc
     );
@@ -20,9 +21,9 @@ module pc
     reg [`BITS_FOR_STATE_COUNTER_PC - 1 : 0] state, state_next; 
     reg [PC_SIZE - 1 : 0]                    pc;
 
-    always @ (negedge i_clk or posedge i_reset) 
+    always @ (negedge i_clk or posedge i_reset or posedge i_flush or posedge i_clear) 
     begin
-        if(i_reset)
+        if(i_reset || i_flush || i_clear)
             begin
                 state <= `STATE_PC_IDLE;
                 pc    <= `CLEAR(PC_SIZE);
@@ -41,9 +42,7 @@ module pc
             `STATE_PC_IDLE: 
                 begin
                     pc = `CLEAR(PC_SIZE);
-
-                    if(i_start)
-                        state_next = `STATE_PC_NEXT;
+                    state_next = `STATE_PC_NEXT;
                 end
 
             `STATE_PC_NEXT:
@@ -70,7 +69,7 @@ module pc
 
             `STATE_PC_PROGRAM_END:
             begin
-                if(~i_halt && i_start)
+                if(~i_halt)
                     state_next = `STATE_PC_IDLE;
             end
 

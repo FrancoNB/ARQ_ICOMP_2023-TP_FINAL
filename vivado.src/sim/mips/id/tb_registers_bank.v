@@ -9,6 +9,7 @@ module tb_registers_bank;
 
     reg                                                 i_clk;
     reg                                                 i_reset;
+    reg                                                 i_flush;
     reg                                                 i_write_enable; 
     reg  [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_a;
     reg  [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_b;
@@ -27,6 +28,7 @@ module tb_registers_bank;
     (
         .i_clk          (i_clk),
         .i_reset        (i_reset),
+        .i_flush        (i_flush),
         .i_write_enable (i_write_enable),
         .i_addr_a       (i_addr_a),
         .i_addr_b       (i_addr_b),
@@ -47,6 +49,7 @@ module tb_registers_bank;
         
         i_clk = 0;
         i_reset = 1;
+        i_flush = 0;
         i_write_enable = 0;
         i_addr_a = 9;
         i_addr_b = 0;

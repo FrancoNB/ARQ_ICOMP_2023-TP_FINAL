@@ -16,9 +16,11 @@ module mips
         input  wire                                                    i_clk,
         input  wire                                                    i_reset,
         input  wire                                                    i_enable,
-        input  wire                                                    i_start,
         input  wire                                                    i_ins_mem_wr,
+        input  wire                                                    i_flush,
+        input  wire                                                    i_clear_program,
         input  wire [INSTRUCTION_BUS_SIZE - 1 : 0]                     i_ins,
+        output wire                                                    o_end_program,
         output wire                                                    o_ins_mem_full,
         output wire                                                    o_ins_mem_emty,
         output wire [REGISTERS_BANK_SIZE * DATA_BUS_SIZE - 1 : 0]      o_registers,
@@ -27,7 +29,6 @@ module mips
 
     // --------------------------- IF Wires ---------------------------
     wire                                       i_if_not_load;
-    wire                                       i_if_halt;
     wire [PC_BUS_SIZE - 1 : 0]                 i_if_next_not_seq_pc;
     wire [PC_BUS_SIZE - 1 : 0]                 i_if_next_seq_pc;
     wire [1 : 0]                               i_if_next_pc_src;
@@ -127,15 +128,16 @@ module mips
     (
         .i_clk             (i_clk),
         .i_reset           (i_reset),
-        .i_start           (i_start),
         .i_enable          (i_enable),
         .i_write_mem       (i_ins_mem_wr),
         .i_instruction     (i_ins),
-        .i_halt            (i_if_halt),
+        .i_halt            (o_end_program),
         .i_not_load        (i_if_not_load),
         .i_next_pc_src     (i_if_next_pc_src),
         .i_next_not_seq_pc (i_if_next_not_seq_pc),
         .i_next_seq_pc     (i_if_next_seq_pc),
+        .i_flush           (i_flush),
+        .i_clear_mem       (i_clear_program),
         .o_full_mem        (o_ins_mem_full),
         .o_empty_mem       (o_ins_mem_empty),
         .o_instruction     (o_if_instruction),
@@ -153,6 +155,7 @@ module mips
         .i_clk          (i_clk),
         .i_reset        (i_reset),
         .i_enable       (i_enable),
+        .i_flush        (i_flush),
         .i_next_seq_pc  (o_if_next_seq_pc),
         .i_instruction  (o_if_instruction),
         .o_next_seq_pc  (i_if_next_seq_pc),
@@ -170,6 +173,7 @@ module mips
     (
         .i_clk                (i_clk),
         .i_reset              (i_reset),
+        .i_flush              (i_flush),
         .i_reg_write_enable   (i_id_reg_wr),
         .i_ctr_reg_src        (i_id_ctr_reg_src),
         .i_reg_addr_wr        (i_id_reg_addr_wr),
@@ -213,6 +217,7 @@ module mips
         .i_clk                (i_clk),
         .i_reset              (i_reset),
         .i_enable             (i_enable),
+        .i_flush              (i_flush),
         .i_mem_rd_src         (o_id_mem_rd_src),
         .i_mem_wr_src         (o_id_mem_wr_src),
         .i_mem_write          (o_id_mem_write),
@@ -301,6 +306,7 @@ module mips
         .i_clk         (i_clk),
         .i_reset       (i_reset),
         .i_enable      (i_enable),
+        .i_flush       (i_flush),
         .i_mem_rd_src  (i_ex_mem_mem_rd_src),
         .i_mem_wr_src  (i_ex_mem_mem_wr_src),
         .i_mem_write   (i_ex_mem_mem_write),
@@ -329,6 +335,7 @@ module mips
     (
         .i_clk         (i_clk),
         .i_reset       (i_reset),
+        .i_flush       (i_flush),
         .i_mem_wr_rd   (i_mem_mem_wr_rd),
         .i_mem_wr_src  (i_mem_mem_wr_src),
         .i_mem_rd_src  (i_mem_mem_rd_src),
@@ -349,6 +356,7 @@ module mips
         .i_clk         (i_clk),
         .i_reset       (i_reset),
         .i_enable      (i_enable),
+        .i_flush       (i_flush),
         .i_mem_to_reg  (i_mem_wb_mem_to_reg),
         .i_wb          (i_mem_wb_wb),
         .i_mem_result  (o_mem_mem_rd),
@@ -403,7 +411,7 @@ module mips
         .i_jmp_stop    (o_id_ex_jmp_stop),
         .o_jmp_stop    (i_id_ex_jmp_stop),
         .o_not_load    (i_if_not_load),
-        .o_halt        (i_if_halt),
+        .o_halt        (o_end_program),
         .o_ctr_reg_src (i_id_ctr_reg_src)
     );
 

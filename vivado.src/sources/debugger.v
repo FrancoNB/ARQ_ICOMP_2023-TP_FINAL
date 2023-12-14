@@ -25,8 +25,8 @@ module debugger
         output wire                                  o_uart_rd,
         output wire                                  o_mips_instruction_wr,
         output wire                                  o_mips_flush,
+        output wire                                  o_mips_clear_program,
         output wire                                  o_mips_enabled,
-        output wire                                  o_mips_start,
         output wire [UART_BUS_SIZE - 1 : 0]          o_uart_data_wr,
         output wire [REGISTER_SIZE - 1 : 0]          o_mips_instruction
     );
@@ -41,9 +41,8 @@ module debugger
     localparam MEMORY_POINTER_SIZE          = $clog2(MEMORY_DATA_BUS_SIZE / MEMORY_SLOT_SIZE);
 
     reg [3 : 0]                               state, state_next, return_state, return_state_next;
-    reg                                       mips_enabled, mips_start, mips_instruction_wr;
-    reg                                       mips_flush, mips_flush_next;
-    reg                                       mips_enabled_next, mips_start_next, mips_instruction_wr_next;
+    reg                                       mips_flush, mips_enabled, mips_instruction_wr, mips_clear_program;
+    reg                                       mips_flush_next, mips_enabled_next, mips_instruction_wr_next, mips_clear_program_next;
     reg                                       uart_wr, uart_rd;
     reg                                       uart_wr_next, uart_rd_next;
     reg [UART_BUS_SIZE - 1 : 0]               uart_data_wr, uart_data_wr_next;
@@ -66,9 +65,9 @@ module debugger
                 state                  <= `DEBUGGER_STATE_IDLE;
                 return_state           <= `DEBUGGER_STATE_IDLE;
                 mips_enabled           <= `LOW;
-                mips_start             <= `LOW;
                 mips_instruction_wr    <= `LOW;
                 mips_flush             <= `LOW;
+                mips_clear_program     <= `LOW;
                 uart_wr                <= `LOW;
                 uart_rd                <= `LOW;
                 uart_data_wr           <= `CLEAR(UART_BUS_SIZE);
@@ -90,7 +89,7 @@ module debugger
                 return_state           <= return_state_next;
                 mips_enabled           <= mips_enabled_next;
                 mips_flush             <= mips_flush_next;
-                mips_start             <= mips_start_next;
+                mips_clear_program     <= mips_clear_program_next;
                 mips_instruction_wr    <= mips_instruction_wr_next;
                 uart_wr                <= uart_wr_next;
                 uart_rd                <= uart_rd_next;
@@ -114,9 +113,9 @@ module debugger
         state_next                  = state;
         return_state_next           = return_state;
         mips_enabled_next           = mips_enabled;
-        mips_start_next             = mips_start;
         mips_instruction_wr_next    = mips_instruction_wr;
         mips_flush_next             = mips_flush;
+        mips_clear_program_next     = mips_clear_program;
         uart_wr_next                = uart_wr;
         uart_rd_next                = uart_rd;
         uart_data_wr_next           = uart_data_wr;
@@ -138,10 +137,11 @@ module debugger
             `DEBUGGER_STATE_IDLE:
             begin
                 mips_enabled_next        = `LOW;
-                mips_start_next          = `LOW;
+                mips_flush_next          = `LOW;
                 mips_instruction_wr_next = `LOW;
                 uart_wr_next             = `LOW;
-                
+                mips_clear_program_next  = `LOW;
+
                 if (uart_rd_available)
                     begin
                         case (uart_rd_buffer)
@@ -151,12 +151,18 @@ module debugger
                                 state_next        = `DEBUGGER_STATE_UART_RD;
                             end
 
+                            "F":
+                            begin
+                                mips_flush_next         = `HIGH;
+                                mips_clear_program_next = `HIGH;
+                            end
+
                             "E":
                             begin
                                 execution_by_steps_next = `LOW;
                                 execution_debug_next    = `LOW;
                                 mips_enabled_next       = `HIGH;
-                                mips_start_next         = `HIGH;
+                                mips_flush_next         = `HIGH;
                                 state_next              = `DEBUGGER_STATE_RUN;
                             end
 
@@ -166,7 +172,7 @@ module debugger
                                 execution_by_steps_next = `HIGH;
                                 execution_debug_next    = `LOW;
                                 mips_enabled_next       = `HIGH;
-                                mips_start_next         = `HIGH;
+                                mips_flush_next         = `HIGH;
                                 state_next              = `DEBUGGER_STATE_RUN;
                             end
 
@@ -176,7 +182,7 @@ module debugger
                                 execution_by_steps_next = `LOW;
                                 execution_debug_next    = `HIGH;
                                 mips_enabled_next       = `HIGH;
-                                mips_start_next         = `HIGH;
+                                mips_flush_next         = `HIGH;
                                 state_next              = `DEBUGGER_STATE_RUN;
                             end
 
@@ -240,7 +246,7 @@ module debugger
 
             `DEBUGGER_STATE_RUN:
             begin
-                mips_start_next = `LOW;
+                mips_flush_next = `LOW;
 
                 if (!i_instruction_memory_empty)
                     begin
@@ -418,8 +424,8 @@ module debugger
     assign o_mips_instruction    = mips_instruction;
     assign o_mips_instruction_wr = mips_instruction_wr;
     assign o_mips_flush          = mips_flush;
+    assign o_mips_clear_program  = mips_clear_program;
     assign o_mips_enabled        = mips_enabled;
-    assign o_mips_start          = mips_start;
     assign o_uart_data_wr        = uart_data_wr;
 
 endmodule

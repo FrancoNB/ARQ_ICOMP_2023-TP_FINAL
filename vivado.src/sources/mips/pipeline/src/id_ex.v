@@ -11,6 +11,7 @@ module id_ex
         input  wire                    i_clk,
         input  wire                    i_reset,
         input  wire                    i_enable,
+        input  wire                    i_flush,
         // Control input signals
         input  wire                    i_jmp_stop,
         input  wire [2 : 0]            i_mem_rd_src,
@@ -84,9 +85,9 @@ module id_ex
     reg [BUS_SIZE - 1 : 0] inm_ext_unsigned;
     reg [BUS_SIZE - 1 : 0] next_seq_pc;
 
-    always @(posedge i_clk or posedge i_reset)
+    always @(posedge i_clk or posedge i_reset or posedge i_flush)
     begin
-        if (i_reset)
+        if (i_reset || i_flush)
             begin
                 jmp_stop           <= `LOW;
                 mem_rd_src         <= `CLEAR(3);

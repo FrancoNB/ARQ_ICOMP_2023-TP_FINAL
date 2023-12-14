@@ -109,9 +109,11 @@ module tb_mips;
     reg                                                     i_clk;
     reg                                                     i_reset;
     reg                                                     i_enable;
-    reg                                                     i_start;
+    reg                                                     i_flush;
+    reg                                                     i_clear_program;
     reg                                                     i_ins_mem_wr;
     reg  [INSTRUCTION_BUS_SIZE - 1 : 0]                     i_ins;
+    wire                                                    o_end_program;
     wire                                                    o_ins_mem_full;
     wire                                                    o_ins_mem_emty;
     wire [REGISTERS_BANK_SIZE * DATA_BUS_SIZE - 1 : 0]      o_registers;
@@ -129,16 +131,18 @@ module tb_mips;
     )
     dut
     (
-        .i_clk          (i_clk),
-        .i_reset        (i_reset),
-        .i_enable       (i_enable),
-        .i_start        (i_start),
-        .i_ins_mem_wr   (i_ins_mem_wr),
-        .i_ins          (i_ins),
-        .o_ins_mem_full (o_ins_mem_full),
-        .o_ins_mem_emty (o_ins_mem_emty),
-        .o_registers    (o_registers),
-        .o_mem_data     (o_mem_data)
+        .i_clk           (i_clk),
+        .i_reset         (i_reset),
+        .i_enable        (i_enable),
+        .i_flush         (i_flush),
+        .i_clear_program (i_clear_program),
+        .i_ins_mem_wr    (i_ins_mem_wr),
+        .i_ins           (i_ins),
+        .o_end_program   (o_end_program),
+        .o_ins_mem_full  (o_ins_mem_full),
+        .o_ins_mem_emty  (o_ins_mem_emty),
+        .o_registers     (o_registers),
+        .o_mem_data      (o_mem_data)
     );
 
     `CLK_TOGGLE(i_clk, `CLK_PERIOD)
@@ -245,10 +249,12 @@ module tb_mips;
     begin
         $srandom(61981512);
         
-        i_reset      = 1'b1;
-        i_enable     = 1'b0;
-        i_start      = 1'b0;
-        i_ins_mem_wr = 1'b0;
+        i_reset         = 1'b1;
+        i_enable        = 1'b0;
+        i_flush         = 1'b0;
+        i_ins_mem_wr    = 1'b0;
+        i_clear_program = 1'b0;
+        
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
 
@@ -265,21 +271,16 @@ module tb_mips;
 
         $display("\n----------------------------------- FIRST  PROGRAM -----------------------------------\n");
 
-        i_start  = 1'b1;
         i_enable = 1'b1;
-        
-        `TICKS_DELAY_1(`CLK_PERIOD);
-        
-        i_start  = 1'b0; 
-         
+   
         `TICKS_DELAY(`CLK_PERIOD, 100);
 
-        i_reset      = 1'b1;
-        i_enable     = 1'b0;
-        i_start      = 1'b0;
-        i_ins_mem_wr = 1'b0;
+        i_clear_program = 1'b1;
+        i_enable        = 1'b0;
+        i_flush         = 1'b1;
+        i_ins_mem_wr    = 1'b0;
 
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_clear_program = 1'b0; i_flush = 1'b0;
 
         i = 0;
         j = 1;
@@ -294,21 +295,16 @@ module tb_mips;
 
         $display("\n----------------------------------- SECOND PROGRAM -----------------------------------\n");
 
-        i_start  = 1'b1;
         i_enable = 1'b1;
-        
-        `TICKS_DELAY_1(`CLK_PERIOD);
-        
-        i_start  = 1'b0; 
-        
+         
         `TICKS_DELAY(`CLK_PERIOD, 100);
 
-        i_reset      = 1'b1;
-        i_enable     = 1'b0;
-        i_start      = 1'b0;
-        i_ins_mem_wr = 1'b0;
+        i_clear_program = 1'b1;
+        i_enable        = 1'b0;
+        i_flush         = 1'b1;
+        i_ins_mem_wr    = 1'b0;
 
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_clear_program = 1'b0; i_flush = 1'b0;
 
         i = 0;
         j = 1;
@@ -323,12 +319,7 @@ module tb_mips;
 
         $display("\n----------------------------------- THIRD  PROGRAM -----------------------------------\n");
 
-        i_start  = 1'b1;
         i_enable = 1'b1;
-
-        `TICKS_DELAY_1(`CLK_PERIOD);
-
-        i_start  = 1'b0;
 
         `TICKS_DELAY(`CLK_PERIOD, 100);
 
@@ -339,7 +330,7 @@ module tb_mips;
         
     always @(posedge i_clk)
     begin
-        if (i_reset)
+        if (i_reset || i_flush)
             begin
                 for (i = 0; i < REGISTERS_BANK_SIZE; i = i + 1)
                     `GET_REG(reg_last, i) = 0;

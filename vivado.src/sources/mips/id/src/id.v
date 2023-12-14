@@ -13,6 +13,7 @@ module id
         /* input controls wires */
         input  wire                                          i_clk,
         input  wire                                          i_reset,
+        input  wire                                          i_flush,
         input  wire                                          i_reg_write_enable,
         input  wire                                          i_ctr_reg_src,
         /* input data wires */
@@ -100,6 +101,7 @@ module id
     (
         .i_clk          (i_clk),
         .i_reset        (i_reset),
+        .i_flush        (i_flush),
         .i_write_enable (i_reg_write_enable),
         .i_addr_a       (o_rs),
         .i_addr_b       (o_rt),

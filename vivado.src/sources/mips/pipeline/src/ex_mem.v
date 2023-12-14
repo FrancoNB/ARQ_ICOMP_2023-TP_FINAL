@@ -12,6 +12,7 @@ module ex_mem
         input  wire                         i_clk,
         input  wire                         i_reset,
         input  wire                         i_enable,
+        input  wire                         i_flush,
         // Control input signals
         input  wire [2 : 0]                 i_mem_rd_src,
         input  wire [1 : 0]                 i_mem_wr_src,
@@ -43,9 +44,9 @@ module ex_mem
     reg [BUS_SIZE - 1 : 0]      alu_result;
     reg [MEM_ADDR_SIZE - 1 : 0] addr_wr;
 
-    always @(posedge i_clk or posedge i_reset)
+    always @(posedge i_clk or posedge i_reset or posedge i_flush)
     begin
-        if (i_reset)
+        if (i_reset || i_flush)
             begin
                 mem_rd_src <= `CLEAR(3);
                 mem_wr_src <= `CLEAR(2);

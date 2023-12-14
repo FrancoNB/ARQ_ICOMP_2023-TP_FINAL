@@ -9,6 +9,7 @@ module tb_data_memory;
 
     reg                                     i_clk;
     reg                                     i_reset;
+    reg                                     i_flush;
     reg                                     i_wr_rd;
     reg  [ADDR_SIZE - 1 : 0]                i_addr;
     reg  [SLOT_SIZE - 1 : 0]                i_data;
@@ -24,6 +25,7 @@ module tb_data_memory;
     (
         .i_clk       (i_clk),
         .i_reset     (i_reset),
+        .i_flush     (i_flush),
         .i_wr_rd     (i_wr_rd),
         .i_addr      (i_addr),
         .i_data      (i_data),
@@ -44,6 +46,7 @@ module tb_data_memory;
         i_wr_rd = 0;
         i_addr = 0;
         i_data = 0;
+        i_flush = 0;
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
 

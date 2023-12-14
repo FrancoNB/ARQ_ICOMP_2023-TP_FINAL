@@ -11,6 +11,7 @@ module tb_id;
     // Señales de reloj y reset
     reg                                           i_clk;
     reg                                           i_reset;
+    reg                                           i_flush;
     // Señales de control de entrada    
     reg                                           i_reg_write_enable;
     reg                                           i_ctr_reg_src;
@@ -59,6 +60,7 @@ module tb_id;
     (
         .i_clk                (i_clk),
         .i_reset              (i_reset),
+        .i_flush              (i_flush),
         .i_reg_write_enable   (i_reg_write_enable),
         .i_ctr_reg_src        (i_ctr_reg_src),
         .i_reg_addr_wr        (i_reg_addr_wr),
@@ -190,6 +192,7 @@ module tb_id;
         $srandom(99595291);
 
         i_reset = 1;
+        i_flush = 0;
         i_reg_write_enable = 0;
         i_ctr_reg_src = 0;
         i_reg_addr_wr = 0;

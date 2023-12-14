@@ -9,6 +9,7 @@ module tb_mem;
 
     reg                                           i_clk;
     reg                                           i_reset;
+    reg                                           i_flush;
     reg                                           i_mem_wr_rd;
     reg  [1 : 0]                                  i_mem_wr_src;
     reg  [2 : 0]                                  i_mem_rd_src;
@@ -26,6 +27,7 @@ module tb_mem;
     (
         .i_clk       (i_clk),
         .i_reset     (i_reset),
+        .i_flush     (i_flush),
         .i_mem_wr_rd (i_mem_wr_rd),
         .i_mem_wr_src(i_mem_wr_src),
         .i_mem_rd_src(i_mem_rd_src),
@@ -45,6 +47,7 @@ module tb_mem;
 
         i_clk = 0;
         i_reset = 1;
+        i_flush = 0;
         i_mem_wr_rd = 0;
         i_mem_wr_src = 0;
         i_mem_rd_src = 0;

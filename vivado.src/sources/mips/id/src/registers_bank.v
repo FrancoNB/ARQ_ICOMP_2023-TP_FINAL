@@ -10,6 +10,7 @@ module registers_bank
     (
         input  wire                                                i_clk, 
         input  wire                                                i_reset,
+        input  wire                                                i_flush,
         input  wire                                                i_write_enable,
         input  wire [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_a,
         input  wire [$clog2(REGISTERS_BANK_SIZE) - 1 : 0]          i_addr_b,
@@ -24,9 +25,9 @@ module registers_bank
     
     integer i = 0;
     
-    always @(negedge i_clk or posedge i_reset) 
+    always @(negedge i_clk or posedge i_reset or posedge i_flush) 
     begin
-        if (i_reset)
+        if (i_reset || i_flush)
             begin
                 for (i = 0; i < REGISTERS_BANK_SIZE; i = i + 1)
                     registers[i] <= `CLEAR(REGISTERS_SIZE);

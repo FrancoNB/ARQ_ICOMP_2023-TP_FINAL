@@ -10,6 +10,7 @@ module instruction_memory
     (
         input  wire                              i_clk,
         input  wire                              i_reset,
+        input  wire                              i_clear,
         input  wire                              i_instruction_write,
         input  wire [POINTER_SIZE - 1 : 0]       i_pc,
         input  wire [WORD_SIZE_IN_BITS - 1 : 0]  i_instruction,
@@ -30,9 +31,9 @@ module instruction_memory
     reg                                                      full, empty, full_next, empty_next;
     reg                                                      write_operation_started;
     
-    always @(posedge i_clk or posedge i_reset) 
+    always @(posedge i_clk or posedge i_reset or posedge i_clear) 
     begin
-        if (i_reset) 
+        if (i_reset || i_clear) 
             begin
                 state                   <= `STATE_INSTRUCTION_MEMORY_WRITE;
                 memory_buffer           <= `CLEAR(MEM_SIZE_IN_BITS);

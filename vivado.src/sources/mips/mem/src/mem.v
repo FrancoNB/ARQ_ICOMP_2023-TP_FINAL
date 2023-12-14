@@ -10,6 +10,7 @@ module mem
     (
         input  wire                                          i_clk,
         input  wire                                          i_reset,
+        input  wire                                          i_flush,
         input  wire                                          i_mem_wr_rd,
         input  wire [1 : 0]                                  i_mem_wr_src,
         input  wire [2 : 0]                                  i_mem_rd_src,
@@ -52,6 +53,7 @@ module mem
     (
         .i_clk       (i_clk),
         .i_reset     (i_reset),
+        .i_flush     (i_flush),
         .i_wr_rd     (i_mem_wr_rd),
         .i_addr      (mem_addr),
         .i_data      (mem_in_data),

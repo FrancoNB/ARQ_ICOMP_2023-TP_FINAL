@@ -6,7 +6,8 @@ module tb_pc;
 
     reg                               i_clk;
     reg                               i_reset;
-    reg                               i_start;
+    reg                               i_flush;
+    reg                               i_clear;
     reg                               i_halt;
     reg                               i_not_load;
     reg                               i_enable;
@@ -19,14 +20,15 @@ module tb_pc;
     ) 
     dut 
     (
-        .i_clk(i_clk),
-        .i_reset(i_reset),
-        .i_start(i_start),
-        .i_halt(i_halt),
-        .i_not_load(i_not_load),
-        .i_enable(i_enable),
-        .i_next_pc(i_next_pc),
-        .o_pc(o_pc)
+        .i_clk      (i_clk),
+        .i_reset    (i_reset),
+        .i_flush    (i_flush),
+        .i_clear    (i_clear),
+        .i_halt     (i_halt),
+        .i_not_load (i_not_load),
+        .i_enable   (i_enable),
+        .i_next_pc  (i_next_pc),
+        .o_pc       (o_pc)
     );
 
     `CLK_TOGGLE(i_clk, `CLK_PERIOD)
@@ -39,6 +41,8 @@ module tb_pc;
         i_halt = 0;
         i_not_load = 0;
         i_next_pc = 0;
+        i_flush = 0;
+        i_clear = 0;
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
         

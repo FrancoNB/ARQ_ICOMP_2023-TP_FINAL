@@ -10,6 +10,7 @@ module data_memory
     (      
         input  wire                                    i_clk,
         input  wire                                    i_reset,
+        input  wire                                    i_flush,
         input  wire                                    i_wr_rd,
         input  wire [ADDR_SIZE - 1 : 0]                i_addr,
         input  wire [SLOT_SIZE - 1 : 0]                i_data,
@@ -22,9 +23,9 @@ module data_memory
 
     integer i = 0;
 
-    always@(negedge i_clk) 
+    always@(negedge i_clk or posedge i_reset or posedge i_flush) 
     begin
-        if (i_reset) 
+        if (i_reset || i_flush) 
             begin
                 for (i = 0; i < 2**ADDR_SIZE; i = i + 1)
                     memory[i] <= `CLEAR(SLOT_SIZE);

@@ -12,6 +12,7 @@ module mem_wb
         input  wire                         i_clk,
         input  wire                         i_reset,
         input  wire                         i_enable,
+        input  wire                         i_flush,
         // Control input signals
         input  wire                         i_wb,
         input  wire                         i_mem_to_reg,
@@ -34,9 +35,9 @@ module mem_wb
     reg [BUS_SIZE - 1 : 0]      alu_result;
     reg [MEM_ADDR_SIZE - 1 : 0] addr_wr;
 
-    always @(posedge i_clk or posedge i_reset)
+    always @(posedge i_clk or posedge i_reset or posedge i_flush)
     begin
-        if (i_reset)
+        if (i_reset || i_flush)
             begin
                 wb         <= `LOW;
                 mem_to_reg <= `LOW;

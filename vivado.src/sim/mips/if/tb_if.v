@@ -9,12 +9,13 @@ module tb_if;
 
     reg                               i_clk;
     reg                               i_reset;
-    reg                               i_start;
+    reg                               i_flush;
     reg                               i_halt;
     reg                               i_not_load;
     reg                               i_enable;
     reg                               i_next_pc_src;
     reg                               i_write_mem;
+    reg                               i_clear_mem;
     reg  [`ARQUITECTURE_BITS - 1 : 0] i_instruction;
     reg  [`ARQUITECTURE_BITS - 1 : 0] i_next_not_seq_pc;
     reg  [`ARQUITECTURE_BITS - 1 : 0] i_next_seq_pc;
@@ -42,6 +43,8 @@ module tb_if;
         .i_instruction     (i_instruction),
         .i_next_not_seq_pc (i_next_not_seq_pc),
         .i_next_seq_pc     (i_next_seq_pc),
+        .i_flush           (i_flush),
+        .i_clear_mem       (i_clear_mem),
         .o_full_mem        (o_full_mem),
         .o_empty_mem       (o_empty_mem),
         .o_instruction     (o_instruction),
@@ -63,6 +66,8 @@ module tb_if;
         i_write_mem = 0;
         i_next_pc_src = 0;
         i_enable = 0;
+        i_flush = 0;
+        i_clear_mem = 0;
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
 
