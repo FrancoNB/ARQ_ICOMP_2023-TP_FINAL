@@ -4,18 +4,16 @@
 
 module top 
     #(
-        parameter MIPS_PC_BUS_SIZE                           = `DEFAULT_PC_SIZE,
-        parameter MIPS_DATA_BUS_SIZE                         = `DEFAULT_ID_BUS_SIZE, 
-        parameter MIPS_INSTRUCTION_BUS_SIZE                  = `DEFAULT_ID_INSTRUCTION_SIZE, 
-        parameter MIPS_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES = `DEFAULT_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES,
-        parameter MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS      = `DEFAULT_INSTRUCTION_MEMORY_MEM_SIZE_IN_WORDS,
-        parameter MIPS_REGISTERS_BANK_SIZE                   = `DEFAULT_REGISTERS_BANK_SIZE,
-        parameter MIPS_DATA_MEMORY_ADDR_SIZE                 = `DEFAULT_DATA_MEMORY_ADDR_SIZE,
-        parameter UART_DATA_BITS                             = `DEFAULT_UART_DATA_BITS,
-        parameter UART_SB_TICKS                              = `DEFAULT_UART_SB_TICKS,
-        parameter UART_DVSR_BIT                              = `DEFAULT_UART_DVSR_BIT,
-        parameter UART_DVSR                                  = `DEFAULT_UART_DVSR,
-        parameter UART_FIFO_SIZE                             = `DEFAULT_UART_FIFO_SIZE
+        parameter MIPS_BUS_SIZE                              = 32,
+        parameter MIPS_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES = 4,
+        parameter MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS      = 128,
+        parameter MIPS_REGISTERS_BANK_SIZE                   = 32,
+        parameter MIPS_DATA_MEMORY_ADDR_SIZE                 = 5,
+        parameter UART_DATA_BITS                             = 8,
+        parameter UART_SB_TICKS                              = 16,
+        parameter UART_DVSR_BIT                              = 7,
+        parameter UART_DVSR                                  = 122,
+        parameter UART_FIFO_SIZE                             = 512
     )
     (
         input  wire         i_clk, 
@@ -25,8 +23,8 @@ module top
         output wire [7 : 0] o_status_led
     );
 
-	localparam MIPS_REGISTER_CONTETNT_BUS_SIZE = MIPS_REGISTERS_BANK_SIZE * MIPS_DATA_BUS_SIZE;
-	localparam MIPS_MEMORY_CONTETNT_BUS_SIZE   = 2**MIPS_DATA_MEMORY_ADDR_SIZE * MIPS_DATA_BUS_SIZE;
+	localparam MIPS_REGISTER_CONTETNT_BUS_SIZE = MIPS_REGISTERS_BANK_SIZE * MIPS_BUS_SIZE;
+	localparam MIPS_MEMORY_CONTETNT_BUS_SIZE   = 2**MIPS_DATA_MEMORY_ADDR_SIZE * MIPS_BUS_SIZE;
 
 	wire 					      	  	     	   wiz_clk;
 
@@ -53,12 +51,7 @@ module top
 	    .i_clk        (i_clk),
 	    .reset        (i_reset),
 	    .locked       (), 
-		.o_clk_75Mhz  (),
-		.o_clk_100Mhz (),
-		.o_clk_125Mhz (),
-		.o_clk_150Mhz (),
-		.o_clk_250Mhz (wiz_clk),
-		.o_clk_300Mhz ()
+		.o_clk_225Mhz (wiz_clk)
 	);
 
     uart
@@ -86,9 +79,9 @@ module top
 	debugger
 	#(
 		.UART_BUS_SIZE          (UART_DATA_BITS),
-		.REGISTER_SIZE          (MIPS_DATA_BUS_SIZE),
+		.REGISTER_SIZE          (MIPS_BUS_SIZE),
 		.REGISTER_BANK_BUS_SIZE (MIPS_REGISTER_CONTETNT_BUS_SIZE),
-		.MEMORY_SLOT_SIZE	   	(MIPS_DATA_BUS_SIZE),
+		.MEMORY_SLOT_SIZE	   	(MIPS_BUS_SIZE),
 		.MEMORY_DATA_BUS_SIZE	(MIPS_MEMORY_CONTETNT_BUS_SIZE)
 	)
 	debugger_unit
@@ -116,9 +109,9 @@ module top
 
     mips
     #(
-        .PC_BUS_SIZE                           (MIPS_PC_BUS_SIZE),
-        .DATA_BUS_SIZE                         (MIPS_DATA_BUS_SIZE),
-        .INSTRUCTION_BUS_SIZE                  (MIPS_INSTRUCTION_BUS_SIZE),
+        .PC_BUS_SIZE                           (MIPS_BUS_SIZE),
+        .DATA_BUS_SIZE                         (MIPS_BUS_SIZE),
+        .INSTRUCTION_BUS_SIZE                  (MIPS_BUS_SIZE),
         .INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES (MIPS_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES),
         .INSTRUCTION_MEMORY_SIZE_IN_WORDS      (MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS),
         .REGISTERS_BANK_SIZE                   (MIPS_REGISTERS_BANK_SIZE),
