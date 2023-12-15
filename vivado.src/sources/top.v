@@ -1,0 +1,143 @@
+`timescale 1ns / 1ps
+
+`include "top.vh"
+
+module top 
+    #(
+        parameter MIPS_PC_BUS_SIZE                           = `DEFAULT_PC_SIZE,
+        parameter MIPS_DATA_BUS_SIZE                         = `DEFAULT_ID_BUS_SIZE, 
+        parameter MIPS_INSTRUCTION_BUS_SIZE                  = `DEFAULT_ID_INSTRUCTION_SIZE, 
+        parameter MIPS_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES = `DEFAULT_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES,
+        parameter MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS      = `DEFAULT_INSTRUCTION_MEMORY_MEM_SIZE_IN_WORDS,
+        parameter MIPS_REGISTERS_BANK_SIZE                   = `DEFAULT_REGISTERS_BANK_SIZE,
+        parameter MIPS_DATA_MEMORY_ADDR_SIZE                 = `DEFAULT_DATA_MEMORY_ADDR_SIZE,
+        parameter UART_DATA_BITS                             = `DEFAULT_UART_DATA_BITS,
+        parameter UART_SB_TICKS                              = `DEFAULT_UART_SB_TICKS,
+        parameter UART_DVSR_BIT                              = `DEFAULT_UART_DVSR_BIT,
+        parameter UART_DVSR                                  = `DEFAULT_UART_DVSR,
+        parameter UART_FIFO_SIZE                             = `DEFAULT_UART_FIFO_SIZE
+    )
+    (
+        input  wire         i_clk, 
+        input  wire         i_reset,
+        input  wire         i_rx,
+        output wire         o_tx,
+        output wire [7 : 0] o_status_led
+    );
+
+	localparam MIPS_REGISTER_CONTETNT_BUS_SIZE = MIPS_REGISTERS_BANK_SIZE * MIPS_DATA_BUS_SIZE;
+	localparam MIPS_MEMORY_CONTETNT_BUS_SIZE   = 2**MIPS_DATA_MEMORY_ADDR_SIZE * MIPS_DATA_BUS_SIZE;
+
+	wire 					      	  	     	   wiz_clk;
+
+	wire 					      	  	           mips_flush;
+	wire 					      	  	           mips_clear_program;
+	wire 					      	  	           mips_enabled;
+	wire 					      	  	           mips_end_program;
+	wire                                           mips_instruction_wr;
+	wire								           mips_instruction_memory_full;
+	wire								           mips_instruction_memory_empty;
+	wire [MIPS_INSTRUCTION_BUS_SIZE - 1 : 0]       mips_instruction;
+	wire [MIPS_REGISTER_CONTETNT_BUS_SIZE - 1 : 0] mips_registers_conntent;
+	wire [MIPS_MEMORY_CONTETNT_BUS_SIZE - 1 : 0]   mips_memory_conntent;
+
+    wire 					      	  		 	   uart_rd;
+    wire 					      	  		 	   uart_wr;
+    wire 					      	  		 	   uart_rx_empty;
+    wire 					      	  		 	   uart_tx_full;
+	wire [UART_DATA_BITS - 1 : 0] 	  		 	   uart_data_wr;
+	wire [UART_DATA_BITS - 1 : 0] 	  		 	   uart_data_rd;
+
+	clk_wiz clk_wiz_unit 
+	(
+	    .i_clk        (i_clk),
+	    .reset        (i_reset),
+	    .locked       (), 
+		.o_clk_75Mhz  (),
+		.o_clk_100Mhz (),
+		.o_clk_125Mhz (),
+		.o_clk_150Mhz (),
+		.o_clk_250Mhz (wiz_clk),
+		.o_clk_300Mhz ()
+	);
+
+    uart
+    #(
+      .DATA_BITS (UART_DATA_BITS),
+      .SB_TICKS  (UART_SB_TICKS),
+      .DVSR_BIT  (UART_DVSR_BIT),
+      .DVSR      (UART_DVSR),
+      .FIFO_SIZE (UART_FIFO_SIZE)
+    )
+    uart_unit
+    (
+      .clk          (wiz_clk),
+      .reset        (i_reset),
+      .rd_uart      (uart_rd),
+      .wr_uart      (uart_wr),
+      .rx           (i_rx),
+      .w_data       (uart_data_wr),
+      .tx_full      (uart_tx_full),
+      .rx_empty     (uart_rx_empty),
+      .tx           (o_tx),
+      .r_data       (uart_data_rd)
+    );
+
+	debugger
+	#(
+		.UART_BUS_SIZE          (UART_DATA_BITS),
+		.REGISTER_SIZE          (MIPS_DATA_BUS_SIZE),
+		.REGISTER_BANK_BUS_SIZE (MIPS_REGISTER_CONTETNT_BUS_SIZE),
+		.MEMORY_SLOT_SIZE	   	(MIPS_DATA_BUS_SIZE),
+		.MEMORY_DATA_BUS_SIZE	(MIPS_MEMORY_CONTETNT_BUS_SIZE)
+	)
+	debugger_unit
+	(
+		.i_clk           			(wiz_clk),
+		.i_reset         			(i_reset),
+		.i_uart_empty	 			(uart_rx_empty),
+		.i_uart_full	 			(uart_tx_full),
+		.i_instruction_memory_empty (mips_instruction_memory_empty),
+		.i_instruction_memory_full  (mips_instruction_memory_full),
+		.i_mips_end_program			(mips_end_program),
+		.i_uart_data_rd				(uart_data_rd),
+		.i_registers_conntent		(mips_registers_conntent),
+		.i_memory_conntent			(mips_memory_conntent),
+		.o_uart_wr					(uart_wr),
+		.o_uart_rd					(uart_rd),
+		.o_mips_instruction_wr		(mips_instruction_wr),
+		.o_mips_flush				(mips_flush),
+		.o_mips_clear_program		(mips_clear_program),
+		.o_mips_enabled				(mips_enabled),
+		.o_uart_data_wr				(uart_data_wr),
+		.o_mips_instruction			(mips_instruction),
+		.o_status_flags				(o_status_led)
+	);
+
+    mips
+    #(
+        .PC_BUS_SIZE                           (MIPS_PC_BUS_SIZE),
+        .DATA_BUS_SIZE                         (MIPS_DATA_BUS_SIZE),
+        .INSTRUCTION_BUS_SIZE                  (MIPS_INSTRUCTION_BUS_SIZE),
+        .INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES (MIPS_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES),
+        .INSTRUCTION_MEMORY_SIZE_IN_WORDS      (MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS),
+        .REGISTERS_BANK_SIZE                   (MIPS_REGISTERS_BANK_SIZE),
+        .DATA_MEMORY_ADDR_SIZE                 (MIPS_DATA_MEMORY_ADDR_SIZE)
+    )
+    mips_unit
+    (
+        .i_clk           (wiz_clk),
+        .i_reset         (i_reset),
+        .i_enable        (mips_enabled),
+        .i_flush         (mips_flush),
+        .i_clear_program (mips_clear_program),
+        .i_ins_mem_wr    (mips_instruction_wr),
+        .i_ins           (mips_instruction),
+        .o_end_program   (mips_end_program),
+        .o_ins_mem_full  (mips_instruction_memory_full),
+        .o_ins_mem_empty (mips_instruction_memory_empty),
+        .o_registers     (mips_registers_conntent),
+        .o_mem_data      (mips_memory_conntent)
+    );
+
+endmodule

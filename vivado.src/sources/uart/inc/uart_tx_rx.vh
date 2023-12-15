@@ -1,7 +1,7 @@
 `ifndef __UART__TX_RX_VH__
 `define __UART__TX_RX_VH__
-    `define DATA_BITS      8
-    `define SB_TICKS       16
+    `define DEFAULT_UART_DATA_BITS      8
+    `define DEFAULT_UART_SB_TICKS       16
     
     `define UART_STATES_NUMBERS 4
     `define UART_STATE_IDLE     2'b00 

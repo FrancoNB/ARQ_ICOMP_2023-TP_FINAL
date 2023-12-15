@@ -5,8 +5,8 @@
 
 module uart_tx
     #(
-        parameter DATA_BITS  = `DATA_BITS,
-        parameter SB_TICKS   = `SB_TICKS
+        parameter DATA_BITS  = `DEFAULT_UART_DATA_BITS,
+        parameter SB_TICKS   = `DEFAULT_UART_SB_TICKS
     )
     (
         input  wire                     s_tick,     

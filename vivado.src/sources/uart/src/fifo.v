@@ -5,8 +5,8 @@
 
 module fifo
     #(
-        parameter FIFO_SIZE  = `FIFO_SIZE,
-        parameter WORD_WIDTH = `WORD_WIDTH
+        parameter FIFO_SIZE  = `DEFAULT_FIFO_SIZE,
+        parameter WORD_WIDTH = `DEFAULT_FIFO_WORD_WIDTH
     )
     (
         input  wire                      clk,

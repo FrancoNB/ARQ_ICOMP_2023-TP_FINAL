@@ -22,7 +22,7 @@ module mips
         input  wire [INSTRUCTION_BUS_SIZE - 1 : 0]                     i_ins,
         output wire                                                    o_end_program,
         output wire                                                    o_ins_mem_full,
-        output wire                                                    o_ins_mem_emty,
+        output wire                                                    o_ins_mem_empty,
         output wire [REGISTERS_BANK_SIZE * DATA_BUS_SIZE - 1 : 0]      o_registers,
         output wire [2**DATA_MEMORY_ADDR_SIZE * DATA_BUS_SIZE - 1 : 0] o_mem_data
     );

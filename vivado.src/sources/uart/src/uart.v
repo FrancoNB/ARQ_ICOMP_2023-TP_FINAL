@@ -4,11 +4,11 @@
 
 module uart
     #(
-        parameter DATA_BITS = `DATA_BITS,
-        parameter SB_TICKS  = `SB_TICKS,
-        parameter DVSR_BIT  = `DVSR_BIT,
-        parameter DVSR      = `DVSR,
-        parameter FIFO_SIZE = `FIFO_SIZE
+        parameter DATA_BITS = `DEFAULT_UART_DATA_BITS,
+        parameter SB_TICKS  = `DEFAULT_UART_SB_TICKS,
+        parameter DVSR_BIT  = `DEFAULT_UART_DVSR_BIT,
+        parameter DVSR      = `DEFAULT_UART_DVSR,
+        parameter FIFO_SIZE = `DEFAULT_UART_FIFO_SIZE
     )
     (
         input  wire                     clk,
