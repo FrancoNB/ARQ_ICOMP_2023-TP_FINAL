@@ -25,6 +25,7 @@ module top
 	localparam MIPS_MEMORY_CONTETNT_BUS_SIZE   = 2**MIPS_DATA_MEMORY_ADDR_SIZE * MIPS_BUS_SIZE;
 
 	wire 					      	  	     	   wiz_clk;
+	wire                                           wiz_locked;
 
 	wire 					      	  	           mips_flush;
 	wire 					      	  	           mips_clear_program;
