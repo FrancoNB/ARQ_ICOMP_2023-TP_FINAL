@@ -24,18 +24,16 @@ module pc
     always @ (negedge i_clk or posedge i_reset or posedge i_flush or posedge i_clear) 
     begin
         if(i_reset || i_flush || i_clear)
-            begin
-                state <= `STATE_PC_IDLE;
-                pc    <= `CLEAR(PC_SIZE);
-            end
+            state <= `STATE_PC_IDLE;
         else
-            begin
-                state <= state_next;
-            end
+            state <= state_next;
     end
 
     always @ (*) 
     begin
+        if(i_reset || i_flush || i_clear)
+            pc = `CLEAR(PC_SIZE);
+            
         state_next = state;
 
         case(state)

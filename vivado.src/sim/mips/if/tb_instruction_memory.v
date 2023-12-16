@@ -4,6 +4,7 @@
 
 module tb_instruction_memory;
 
+    localparam PC_BUS_SIZE        = 32;
     localparam WORD_SIZE_IN_BYTES = 4;
     localparam MEM_SIZE_IN_WORDS  = 10;
     localparam POINTER_SIZE       = $clog2(MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES);
@@ -18,8 +19,9 @@ module tb_instruction_memory;
 
     instruction_memory 
     #(
-        .WORD_SIZE_IN_BYTES(WORD_SIZE_IN_BYTES),
-        .MEM_SIZE_IN_WORDS(MEM_SIZE_IN_WORDS)
+        .WORD_SIZE_IN_BYTES (WORD_SIZE_IN_BYTES),
+        .MEM_SIZE_IN_WORDS  (MEM_SIZE_IN_WORDS),
+        -PC_BUS_SIZE        (PC_BUS_SIZE)
     ) 
     dut 
     (

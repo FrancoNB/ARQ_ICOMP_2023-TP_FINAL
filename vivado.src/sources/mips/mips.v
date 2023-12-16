@@ -31,13 +31,17 @@ module mips
     wire                                       i_if_not_load;
     wire [PC_BUS_SIZE - 1 : 0]                 i_if_next_not_seq_pc;
     wire [PC_BUS_SIZE - 1 : 0]                 i_if_next_seq_pc;
-    wire [1 : 0]                               i_if_next_pc_src;
+    wire                                       i_if_next_pc_src;
+    wire                                       i_if_halt;
     wire [INSTRUCTION_BUS_SIZE - 1 : 0]        o_if_instruction;
     wire [PC_BUS_SIZE - 1 : 0]                 o_if_next_seq_pc;
 
+    // --------------------------- IF / ID Wires ---------------------------
+    wire                                       o_if_id_halt;                
+
     // --------------------------- ID Wires ---------------------------
     wire                                       i_id_reg_wr;
-    wire [1 : 0]                               i_id_ctr_reg_src;
+    wire                                       i_id_ctr_reg_src;
     wire [INSTRUCTION_BUS_SIZE - 1 : 0]        i_id_instruction;
     wire [$clog2(REGISTERS_BANK_SIZE) - 1 : 0] i_id_reg_addr_wr;
     wire [DATA_BUS_SIZE - 1 : 0]               i_id_reg_data_wr;
@@ -65,6 +69,7 @@ module mips
     // --------------------------- ID / EX Wires ---------------------------
     wire                                       i_id_ex_jmp_stop;
     wire                                       o_id_ex_jmp_stop;
+    wire                                       o_id_ex_halt;
     wire [4 : 0]                               o_id_ex_rs;
     wire [5 : 0]                               o_id_ex_op;
 
@@ -98,12 +103,12 @@ module mips
     wire                                       i_ex_mem_mem_write;
     wire                                       i_ex_mem_wb;
     wire                                       i_ex_mem_mem_to_reg;
+    wire                                       o_ex_mem_halt;
 
     // --------------------------- MEM Wires ---------------------------
     wire                                       i_mem_mem_wr_rd;
     wire [1 : 0]                               i_mem_mem_wr_src;
     wire [2 : 0]                               i_mem_mem_rd_src;
-    wire [DATA_BUS_SIZE - 1 : 0]               i_mem_alu_res;
     wire [DATA_BUS_SIZE - 1 : 0]               i_mem_bus_b;
     wire [DATA_BUS_SIZE - 1 : 0]               o_mem_mem_rd;
 
@@ -111,6 +116,7 @@ module mips
     wire                                       i_mem_wb_mem_to_reg;
     wire                                       i_mem_wb_wb;
     wire [DATA_MEMORY_ADDR_SIZE - 1 : 0]       i_mem_wb_addr_wr;
+    wire [DATA_BUS_SIZE - 1 : 0]               i_mem_wb_alu_res;
 
     // --------------------------- WB Wires ---------------------------
     wire [DATA_BUS_SIZE - 1 : 0]               i_wb_mem_result;
@@ -131,7 +137,7 @@ module mips
         .i_enable          (i_enable),
         .i_write_mem       (i_ins_mem_wr),
         .i_instruction     (i_ins),
-        .i_halt            (o_end_program),
+        .i_halt            (i_if_halt),
         .i_not_load        (i_if_not_load),
         .i_next_pc_src     (i_if_next_pc_src),
         .i_next_not_seq_pc (i_if_next_not_seq_pc),
@@ -156,10 +162,12 @@ module mips
         .i_reset        (i_reset),
         .i_enable       (i_enable),
         .i_flush        (i_flush),
+        .i_halt         (i_if_halt),
         .i_next_seq_pc  (o_if_next_seq_pc),
         .i_instruction  (o_if_instruction),
         .o_next_seq_pc  (i_if_next_seq_pc),
-        .o_instruction  (i_id_instruction)
+        .o_instruction  (i_id_instruction),
+        .o_halt         (o_if_id_halt)
     );
 
     // --------------------------- ID Unit ---------------------------
@@ -240,6 +248,7 @@ module mips
         .i_inm_upp            (o_id_inm_upp),
         .i_inm_ext_unsigned   (o_id_inm_ext_unsigned),
         .i_next_seq_pc        (i_if_next_seq_pc),
+        .i_halt               (o_if_id_halt),
         .o_reg_dst            (i_ex_reg_dst),
         .o_alu_src_a          (i_ex_alu_src_a),
         .o_alu_src_b          (i_ex_alu_src_b),
@@ -261,7 +270,8 @@ module mips
         .o_mem_write          (i_ex_mem_mem_write),
         .o_wb                 (i_ex_mem_wb),
         .o_mem_to_reg         (i_ex_mem_mem_to_reg),
-        .o_jmp_stop           (o_id_ex_jmp_stop)
+        .o_jmp_stop           (o_id_ex_jmp_stop),
+        .o_halt               (o_id_ex_halt)
     );
 
     // --------------------------- EX Unit ---------------------------
@@ -287,7 +297,7 @@ module mips
         .i_next_seq_pc        (i_ex_next_seq_pc),
         .i_sc_src_a           (i_ex_sc_src_a),
         .i_sc_src_b           (i_ex_sc_src_b),
-        .i_sc_alu_result      (i_mem_alu_res),
+        .i_sc_alu_result      (i_mem_wb_alu_res),
         .i_sc_wb_result       (i_id_reg_data_wr),
         .o_wb_addr            (o_ex_wb_addr),
         .o_alu_result         (o_ex_alu_result),
@@ -315,14 +325,16 @@ module mips
         .i_alu_result  (o_ex_alu_result),
         .i_bus_b       (o_ex_sc_bus_b),
         .i_addr_wr     (o_ex_wb_addr),
-        .o_alu_result  (i_mem_alu_res),
+        .i_halt        (o_id_ex_halt),
+        .o_alu_result  (i_mem_wb_alu_res),
         .o_bus_b       (i_mem_bus_b),
         .o_mem_write   (i_mem_mem_wr_rd),
         .o_mem_wr_src  (i_mem_mem_wr_src),
         .o_mem_rd_src  (i_mem_mem_rd_src),
         .o_addr_wr     (i_mem_wb_addr_wr),
         .o_mem_to_reg  (i_mem_wb_mem_to_reg),
-        .o_wb          (i_mem_wb_wb)
+        .o_wb          (i_mem_wb_wb),
+        .o_halt        (o_ex_mem_halt)
     );
 
     // --------------------------- MEM Unit ---------------------------
@@ -339,7 +351,7 @@ module mips
         .i_mem_wr_rd   (i_mem_mem_wr_rd),
         .i_mem_wr_src  (i_mem_mem_wr_src),
         .i_mem_rd_src  (i_mem_mem_rd_src),
-        .i_alu_res     (i_mem_alu_res),
+        .i_mem_addr    (i_mem_wb_alu_res[DATA_MEMORY_ADDR_SIZE - 1 : 0]),
         .i_bus_b       (i_mem_bus_b),
         .o_mem_rd      (o_mem_mem_rd),
         .o_bus_debug   (o_mem_data)
@@ -360,13 +372,15 @@ module mips
         .i_mem_to_reg  (i_mem_wb_mem_to_reg),
         .i_wb          (i_mem_wb_wb),
         .i_mem_result  (o_mem_mem_rd),
-        .i_alu_result  (i_mem_alu_res),
+        .i_alu_result  (i_mem_wb_alu_res),
         .i_addr_wr     (i_mem_wb_addr_wr),
+        .i_halt        (o_ex_mem_halt),
         .o_mem_to_reg  (i_wb_mem_to_reg),
         .o_wb          (i_id_reg_wr),
         .o_mem_result  (i_wb_mem_result),
         .o_alu_result  (i_wb_alu_result),
-        .o_addr_wr     (i_id_reg_addr_wr)
+        .o_addr_wr     (i_id_reg_addr_wr),
+        .o_halt        (o_end_program)
     );
 
     // --------------------------- WB Unit ---------------------------
@@ -411,7 +425,7 @@ module mips
         .i_jmp_stop    (o_id_ex_jmp_stop),
         .o_jmp_stop    (i_id_ex_jmp_stop),
         .o_not_load    (i_if_not_load),
-        .o_halt        (o_end_program),
+        .o_halt        (i_if_halt),
         .o_ctr_reg_src (i_id_ctr_reg_src)
     );
 

@@ -23,6 +23,7 @@ module id_ex
         input  wire                    i_alu_src_a,
         input  wire [2 : 0]            i_alu_src_b,
         input  wire [2 : 0]            i_alu_op,
+        input  wire                    i_halt,
         // Data input signals
         input  wire [BUS_SIZE - 1 : 0] i_bus_a,
         input  wire [BUS_SIZE - 1 : 0] i_bus_b,
@@ -47,6 +48,7 @@ module id_ex
         output wire                    o_alu_src_a,
         output wire [2 : 0]            o_alu_src_b,
         output wire [2 : 0]            o_alu_op,
+        output wire                    o_halt,
         // Data output signals
         output wire [BUS_SIZE - 1 : 0] o_bus_a,
         output wire [BUS_SIZE - 1 : 0] o_bus_b,
@@ -84,6 +86,7 @@ module id_ex
     reg [BUS_SIZE - 1 : 0] inm_upp;
     reg [BUS_SIZE - 1 : 0] inm_ext_unsigned;
     reg [BUS_SIZE - 1 : 0] next_seq_pc;
+    reg                    halt;
 
     always @(posedge i_clk or posedge i_reset or posedge i_flush)
     begin
@@ -111,6 +114,7 @@ module id_ex
                 inm_upp            <= `CLEAR(BUS_SIZE);
                 inm_ext_unsigned   <= `CLEAR(BUS_SIZE);
                 next_seq_pc        <= `CLEAR(BUS_SIZE);
+                halt               <= `LOW;
             end
         else if (i_enable)
             begin
@@ -136,6 +140,7 @@ module id_ex
                 inm_upp            <= i_inm_upp;
                 inm_ext_unsigned   <= i_inm_ext_unsigned;
                 next_seq_pc        <= i_next_seq_pc;
+                halt               <= i_halt;
             end
     end
 
@@ -161,5 +166,6 @@ module id_ex
     assign o_inm_upp            = inm_upp;
     assign o_inm_ext_unsigned   = inm_ext_unsigned;
     assign o_next_seq_pc        = next_seq_pc;
+    assign o_halt               = halt;
 
 endmodule

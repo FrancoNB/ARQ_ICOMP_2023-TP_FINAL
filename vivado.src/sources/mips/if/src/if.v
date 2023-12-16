@@ -9,22 +9,22 @@ module _if
         parameter MEM_SIZE_IN_WORDS  = `DEFAULT_INSTRUCTION_MEMORY_MEM_SIZE_IN_WORDS
     )
     (
-        input  wire                    i_clk, 
-        input  wire                    i_reset,
-        input  wire                    i_halt,
-        input  wire                    i_not_load,
-        input  wire                    i_enable,
-        input  wire                    i_next_pc_src,
-        input  wire                    i_write_mem,
-        input  wire                    i_clear_mem,
-        input  wire                    i_flush,
-        input  wire [BUS_SIZE - 1 : 0] i_instruction,
-        input  wire [PC_SIZE - 1 : 0]  i_next_not_seq_pc,
-        input  wire [PC_SIZE - 1 : 0]  i_next_seq_pc,
-        output wire                    o_full_mem,
-        output wire                    o_empty_mem,
-        output wire [PC_SIZE - 1 : 0]  o_instruction,
-        output wire [PC_SIZE - 1 : 0]  o_next_seq_pc
+        input  wire                                           i_clk, 
+        input  wire                                           i_reset,
+        input  wire                                           i_halt,
+        input  wire                                           i_not_load,
+        input  wire                                           i_enable,
+        input  wire                                           i_next_pc_src,
+        input  wire                                           i_write_mem,
+        input  wire                                           i_clear_mem,
+        input  wire                                           i_flush,
+        input  wire [WORD_SIZE_IN_BYTES * `BYTE_SIZE - 1 : 0] i_instruction,
+        input  wire [PC_SIZE - 1 : 0]                         i_next_not_seq_pc,
+        input  wire [PC_SIZE - 1 : 0]                         i_next_seq_pc,
+        output wire                                           o_full_mem,
+        output wire                                           o_empty_mem,
+        output wire [PC_SIZE - 1 : 0]                         o_instruction,
+        output wire [PC_SIZE - 1 : 0]                         o_next_seq_pc
     );
     
     localparam BUS_SIZE = WORD_SIZE_IN_BYTES * `BYTE_SIZE;
@@ -76,7 +76,8 @@ module _if
     instruction_memory 
     #(
         .WORD_SIZE_IN_BYTES(WORD_SIZE_IN_BYTES),
-        .MEM_SIZE_IN_WORDS (MEM_SIZE_IN_WORDS)
+        .MEM_SIZE_IN_WORDS (MEM_SIZE_IN_WORDS),
+        .PC_BUS_SIZE       (PC_SIZE)
     ) 
     instruction_memory_unit 
     (

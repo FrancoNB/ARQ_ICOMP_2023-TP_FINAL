@@ -19,6 +19,7 @@ module ex_mem
         input  wire                         i_mem_write,
         input  wire                         i_wb,
         input  wire                         i_mem_to_reg,
+        input  wire                         i_halt,
         // Data input signals
         input  wire [BUS_SIZE - 1 : 0]      i_bus_b,
         input  wire [BUS_SIZE - 1 : 0]      i_alu_result,
@@ -29,6 +30,7 @@ module ex_mem
         output wire                         o_mem_write,
         output wire                         o_wb,
         output wire                         o_mem_to_reg,
+        output wire                         o_halt,
         // Data output signals
         output wire [BUS_SIZE - 1 : 0]      o_bus_b,
         output wire [BUS_SIZE - 1 : 0]      o_alu_result,
@@ -43,6 +45,7 @@ module ex_mem
     reg [BUS_SIZE - 1 : 0]      bus_b;
     reg [BUS_SIZE - 1 : 0]      alu_result;
     reg [MEM_ADDR_SIZE - 1 : 0] addr_wr;
+    reg                         halt;
 
     always @(posedge i_clk or posedge i_reset or posedge i_flush)
     begin
@@ -56,6 +59,7 @@ module ex_mem
                 bus_b      <= `CLEAR(BUS_SIZE);
                 alu_result <= `CLEAR(BUS_SIZE);
                 addr_wr    <= `CLEAR(MEM_ADDR_SIZE);
+                halt       <= `LOW;
             end
         else if (i_enable)
             begin
@@ -67,6 +71,7 @@ module ex_mem
                 bus_b      <= i_bus_b;
                 alu_result <= i_alu_result;
                 addr_wr    <= i_addr_wr;
+                halt       <= i_halt;
             end
     end
 
@@ -78,5 +83,6 @@ module ex_mem
     assign o_bus_b      = bus_b;
     assign o_alu_result = alu_result;
     assign o_addr_wr    = addr_wr;
+    assign o_halt       = halt;
     
 endmodule

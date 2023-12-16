@@ -1,19 +1,17 @@
 `timescale 1ns / 1ps
 
-`include "top.vh"
-
 module top 
     #(
         parameter MIPS_BUS_SIZE                              = 32,
         parameter MIPS_INSTRUCTION_MEMORY_WORD_SIZE_IN_BYTES = 4,
-        parameter MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS      = 128,
+        parameter MIPS_INSTRUCTION_MEMORY_SIZE_IN_WORDS      = 64,
         parameter MIPS_REGISTERS_BANK_SIZE                   = 32,
         parameter MIPS_DATA_MEMORY_ADDR_SIZE                 = 5,
         parameter UART_DATA_BITS                             = 8,
         parameter UART_SB_TICKS                              = 16,
         parameter UART_DVSR_BIT                              = 7,
-        parameter UART_DVSR                                  = 122,
-        parameter UART_FIFO_SIZE                             = 512
+        parameter UART_DVSR                                  = 108,
+        parameter UART_FIFO_SIZE                             = 256
     )
     (
         input  wire         i_clk, 
@@ -35,7 +33,7 @@ module top
 	wire                                           mips_instruction_wr;
 	wire								           mips_instruction_memory_full;
 	wire								           mips_instruction_memory_empty;
-	wire [MIPS_INSTRUCTION_BUS_SIZE - 1 : 0]       mips_instruction;
+	wire [MIPS_BUS_SIZE - 1 : 0]                   mips_instruction;
 	wire [MIPS_REGISTER_CONTETNT_BUS_SIZE - 1 : 0] mips_registers_conntent;
 	wire [MIPS_MEMORY_CONTETNT_BUS_SIZE - 1 : 0]   mips_memory_conntent;
 
@@ -46,12 +44,11 @@ module top
 	wire [UART_DATA_BITS - 1 : 0] 	  		 	   uart_data_wr;
 	wire [UART_DATA_BITS - 1 : 0] 	  		 	   uart_data_rd;
 
-	clk_wiz clk_wiz_unit 
+	clk_wiz_0 clk_wiz_unit 
 	(
-	    .i_clk        (i_clk),
-	    .reset        (i_reset),
-	    .locked       (), 
-		.o_clk_225Mhz (wiz_clk)
+	    .i_clk (i_clk),
+	    .reset (i_reset),
+		.o_clk (wiz_clk)
 	);
 
     uart

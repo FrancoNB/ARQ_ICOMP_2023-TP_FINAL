@@ -14,7 +14,7 @@ module mem
         input  wire                                          i_mem_wr_rd,
         input  wire [1 : 0]                                  i_mem_wr_src,
         input  wire [2 : 0]                                  i_mem_rd_src,
-        input  wire [IO_BUS_SIZE - 1 : 0]                    i_alu_res,
+        input  wire [MEM_ADDR_SIZE - 1 : 0]                  i_mem_addr,
         input  wire [IO_BUS_SIZE - 1 : 0]                    i_bus_b,
         output wire [IO_BUS_SIZE - 1 : 0]                    o_mem_rd,
         output wire [2**MEM_ADDR_SIZE * IO_BUS_SIZE - 1 : 0] o_bus_debug
@@ -32,11 +32,8 @@ module mem
     wire [IO_BUS_SIZE - 1 : 0]     mem_out_data_sext_byte;
     wire [IO_BUS_SIZE - 1 : 0]     mem_out_data_sext_halfword;
 
-    wire [MEM_ADDR_SIZE - 1 : 0]   mem_addr;
     wire [IO_BUS_SIZE - 1 : 0]     mem_in_data;
     wire [IO_BUS_SIZE - 1 : 0]     mem_out_data;
-
-    assign mem_addr              = i_alu_res[MEM_ADDR_SIZE - 1 : 0];
 
     assign bus_b_byte            = i_bus_b[`BYTE_SIZE - 1 : 0];
     assign bus_b_halfword        = i_bus_b[IO_BUS_SIZE / 2 - 1 : 0];
@@ -55,7 +52,7 @@ module mem
         .i_reset     (i_reset),
         .i_flush     (i_flush),
         .i_wr_rd     (i_mem_wr_rd),
-        .i_addr      (mem_addr),
+        .i_addr      (i_mem_addr),
         .i_data      (mem_in_data),
         .o_data      (mem_out_data),
         .o_bus_debug (o_bus_debug)

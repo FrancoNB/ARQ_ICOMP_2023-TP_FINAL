@@ -32,30 +32,30 @@ module debugger
         output wire [7 : 0]                          o_status_flags
     );
 
-    localparam BYTES_PER_INSTRUCTION        = REGISTER_SIZE / `BYTE_SIZE;
-    localparam BYTES_COUNTER_SIZE           = $clog2(BYTES_PER_INSTRUCTION);
-    localparam UART_WR_BUFFER_SIZE          = UART_BUS_SIZE * 7;
-    localparam UART_RD_BUFFER_SIZE          = UART_BUS_SIZE * 4;
-    localparam UART_WR_BUFFER_POINTER_SIZE  = $clog2(UART_WR_BUFFER_SIZE / UART_BUS_SIZE);
-    localparam UART_RD_BUFFER_POINTER_SIZE  = $clog2(UART_RD_BUFFER_SIZE / UART_BUS_SIZE);
-    localparam REGISTER_POINTER_SIZE        = $clog2(REGISTER_BANK_BUS_SIZE / REGISTER_SIZE);
-    localparam MEMORY_POINTER_SIZE          = $clog2(MEMORY_DATA_BUS_SIZE / MEMORY_SLOT_SIZE);
+    localparam BYTES_PER_INSTRUCTION       = REGISTER_SIZE / `BYTE_SIZE;
+    localparam BYTES_COUNTER_SIZE          = $clog2(BYTES_PER_INSTRUCTION);
+    localparam UART_WR_BUFFER_SIZE         = UART_BUS_SIZE * 7;
+    localparam UART_RD_BUFFER_SIZE         = UART_BUS_SIZE * 4;
+    localparam UART_WR_BUFFER_POINTER_SIZE = $clog2(UART_WR_BUFFER_SIZE / UART_BUS_SIZE);
+    localparam UART_RD_BUFFER_POINTER_SIZE = $clog2(UART_RD_BUFFER_SIZE / UART_BUS_SIZE);
+    localparam REGISTER_POINTER_SIZE       = $clog2(REGISTER_BANK_BUS_SIZE / REGISTER_SIZE);
+    localparam MEMORY_POINTER_SIZE         = $clog2(MEMORY_DATA_BUS_SIZE / MEMORY_SLOT_SIZE);
 
-    reg [3 : 0]                               state, state_next, return_state, return_state_next;
-    reg                                       mips_flush, mips_enabled, mips_instruction_wr, mips_clear_program;
-    reg                                       uart_wr, uart_rd;
-    reg [UART_BUS_SIZE - 1 : 0]               uart_data_wr;
-    reg [REGISTER_SIZE - 1 : 0]               mips_instruction;
-    reg                                       execution_by_steps, execution_by_steps_next;
-    reg                                       execution_debug, execution_debug_next;
-    reg [UART_WR_BUFFER_SIZE - 1 : 0]         uart_wr_buffer, uart_wr_buffer_next;
-    reg [UART_WR_BUFFER_POINTER_SIZE - 1 : 0] uart_wr_buffer_pointer, uart_wr_buffer_pointer_next;
-    reg [UART_RD_BUFFER_SIZE - 1 : 0]         uart_rd_buffer, uart_rd_buffer_next;
-    reg [UART_RD_BUFFER_POINTER_SIZE - 1 : 0] uart_rd_buffer_pointer, uart_rd_buffer_pointer_next;
-    reg                                       uart_rd_available, uart_rd_available_next;
-    reg [UART_BUS_SIZE - 1 : 0]               clk_counter, clk_counter_next;
-    reg [REGISTER_POINTER_SIZE - 1 : 0]       register_pointer, register_pointer_next;
-    reg [MEMORY_POINTER_SIZE - 1 : 0]         memory_pointer, memory_pointer_next;
+    reg [3 : 0]                           state, state_next, return_state, return_state_next;
+    reg                                   mips_flush, mips_enabled, mips_instruction_wr, mips_clear_program;
+    reg                                   uart_wr, uart_rd;
+    reg [UART_BUS_SIZE - 1 : 0]           uart_data_wr;
+    reg [REGISTER_SIZE - 1 : 0]           mips_instruction;
+    reg                                   execution_by_steps, execution_by_steps_next;
+    reg                                   execution_debug, execution_debug_next;
+    reg [UART_WR_BUFFER_SIZE - 1 : 0]     uart_wr_buffer, uart_wr_buffer_next;
+    reg [UART_WR_BUFFER_POINTER_SIZE : 0] uart_wr_buffer_pointer, uart_wr_buffer_pointer_next;
+    reg [UART_RD_BUFFER_SIZE - 1 : 0]     uart_rd_buffer, uart_rd_buffer_next;
+    reg [UART_RD_BUFFER_POINTER_SIZE : 0] uart_rd_buffer_pointer, uart_rd_buffer_pointer_next;
+    reg                                   uart_rd_available, uart_rd_available_next;
+    reg [UART_BUS_SIZE - 1 : 0]           clk_counter, clk_counter_next;
+    reg [REGISTER_POINTER_SIZE : 0]       register_pointer, register_pointer_next;
+    reg [MEMORY_POINTER_SIZE   : 0]       memory_pointer, memory_pointer_next;
 
     always @(posedge i_clk or posedge i_reset) 
     begin
@@ -63,14 +63,6 @@ module debugger
             begin
                 state                  <= `DEBUGGER_STATE_IDLE;
                 return_state           <= `DEBUGGER_STATE_IDLE;
-                mips_enabled           <= `LOW;
-                mips_instruction_wr    <= `LOW;
-                mips_flush             <= `LOW;
-                mips_clear_program     <= `LOW;
-                uart_wr                <= `LOW;
-                uart_rd                <= `LOW;
-                uart_data_wr           <= `CLEAR(UART_BUS_SIZE);
-                mips_instruction       <= `CLEAR(REGISTER_SIZE);
                 execution_by_steps     <= `LOW;
                 execution_debug        <= `LOW;
                 uart_wr_buffer         <= `CLEAR(UART_WR_BUFFER_SIZE);
@@ -101,6 +93,18 @@ module debugger
     
     always @(*)
     begin
+        if (i_reset)
+            begin
+                mips_enabled        = `LOW;
+                mips_instruction_wr = `LOW;
+                mips_flush          = `LOW;
+                mips_clear_program  = `LOW;
+                uart_wr             = `LOW;
+                uart_rd             = `LOW;
+                uart_data_wr        = `CLEAR(UART_BUS_SIZE);
+                mips_instruction    = `CLEAR(REGISTER_SIZE);
+            end
+
         state_next                  = state;
         return_state_next           = return_state;
         execution_by_steps_next     = execution_by_steps;
@@ -131,8 +135,10 @@ module debugger
                         case (uart_rd_buffer)
                             "L": 
                             begin
-                                return_state_next = `DEBUGGER_STATE_LOAD;
-                                state_next        = `DEBUGGER_STATE_UART_RD;
+                                mips_flush         = `HIGH;
+                                mips_clear_program = `HIGH;
+                                return_state_next  = `DEBUGGER_STATE_LOAD;
+                                state_next         = `DEBUGGER_STATE_UART_RD;
                             end
 
                             "F":
@@ -177,6 +183,8 @@ module debugger
                                 state_next          = `DEBUGGER_STATE_UART_WR;
                             end
                         endcase
+
+                        uart_rd_available_next = `LOW;
                     end
                 else
                     begin
@@ -189,34 +197,35 @@ module debugger
 
             `DEBUGGER_STATE_LOAD:
             begin
+                mips_clear_program = `LOW;
+                mips_flush         = `LOW;
+
                 if (!i_instruction_memory_full)
                     begin
-                        if (i_instruction_memory_empty)
-                            begin
-                                if (uart_rd_available)
-                                    begin
-                                        mips_instruction    = uart_rd_buffer;
-                                        mips_instruction_wr = `HIGH;
-                                    end
-                                else
-                                    begin
-                                        mips_instruction_wr = `LOW;
+                        begin
+                            if (uart_rd_available)
+                                begin
+                                    mips_instruction       = uart_rd_buffer;
+                                    mips_instruction_wr    = `HIGH;
+                                    uart_rd_available_next = `LOW;
+                                end
+                            else
+                                begin
+                                    mips_instruction_wr = `LOW;
 
-                                        if (mips_instruction == `INSTRUCTION_HALT)
-                                            state_next = `DEBUGGER_STATE_IDLE;
-                                        else
-                                            begin
-                                                return_state_next   = `DEBUGGER_STATE_LOAD;
-                                                state_next          = `DEBUGGER_STATE_UART_RD;
-                                            end
-                                    end
-                            end
-                        else
-                            begin
-                                uart_wr_buffer_next = {`DEBUGGER_ERROR_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_ERROR_ALREADY_PROGRAM_LOAD};
-                                return_state_next   = `DEBUGGER_STATE_IDLE;
-                                state_next          = `DEBUGGER_STATE_UART_WR;
-                            end
+                                    if (mips_instruction == `INSTRUCTION_HALT)
+                                        begin
+                                            uart_wr_buffer_next = {`DEBUGGER_INFO_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_INFO_LOAD_PROGRAM};
+                                            return_state_next   = `DEBUGGER_STATE_IDLE;
+                                            state_next          = `DEBUGGER_STATE_UART_WR;
+                                        end
+                                    else
+                                        begin
+                                            return_state_next   = `DEBUGGER_STATE_LOAD;
+                                            state_next          = `DEBUGGER_STATE_UART_RD;
+                                        end
+                                end
+                        end
                     end
                 else
                     begin
@@ -255,6 +264,8 @@ module debugger
                                         state_next          = `DEBUGGER_STATE_UART_WR;
                                     end
                                 endcase
+
+                                uart_rd_available_next = `LOW;
                             end
                         else if (execution_by_steps && !i_mips_end_program)
                             begin
@@ -371,25 +382,25 @@ module debugger
 
             `DEBUGGER_STATE_UART_RD:
             begin
-                if (!i_uart_empty)
+                if (uart_rd_buffer_pointer < UART_RD_BUFFER_SIZE / UART_BUS_SIZE)
                     begin
-                        if (uart_rd_buffer_pointer < UART_RD_BUFFER_SIZE / UART_BUS_SIZE)
+                        if (!i_uart_empty)
                             begin
-                                uart_rd_buffer[uart_rd_buffer_pointer * UART_BUS_SIZE +: UART_BUS_SIZE] = i_uart_data_rd;
-                                uart_rd                                                                 = `HIGH;
-                                uart_rd_buffer_pointer_next                                             = uart_rd_buffer_pointer + 1;
-                                state_next                                                              = `DEBUGGER_STATE_UART_RD_RESET;
-                                uart_rd_available_next                                                  = `LOW;
+                                uart_rd_buffer_next[uart_rd_buffer_pointer * UART_BUS_SIZE +: UART_BUS_SIZE] = i_uart_data_rd;
+                                uart_rd                                                                      = `HIGH;
+                                uart_rd_buffer_pointer_next                                                  = uart_rd_buffer_pointer + 1;
+                                state_next                                                                   = `DEBUGGER_STATE_UART_RD_RESET;
+                                uart_rd_available_next                                                       = `LOW;
                             end
                         else
-                            begin
-                                uart_rd_available_next      = `HIGH;
-                                uart_rd_buffer_pointer_next = `CLEAR(UART_RD_BUFFER_POINTER_SIZE);
-                                state_next                  = return_state;
-                            end
+                            state_next = return_state;
                     end
                 else
-                    state_next = return_state;
+                    begin
+                        uart_rd_available_next      = `HIGH;
+                        uart_rd_buffer_pointer_next = `CLEAR(UART_RD_BUFFER_POINTER_SIZE);
+                        state_next                  = return_state;
+                    end
             end
 
             `DEBUGGER_STATE_UART_RD_RESET:
