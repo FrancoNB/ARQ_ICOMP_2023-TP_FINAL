@@ -51,7 +51,7 @@ module tb_mem;
         i_mem_wr_rd = 0;
         i_mem_wr_src = 0;
         i_mem_rd_src = 0;
-        i_alu_res = 0;
+        i_mem_addr = 0;
         i_bus_b = 0;
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;

@@ -37,7 +37,6 @@ module tb_pc;
         $srandom(383715157);
 
         i_reset = 1;
-        i_start = 0;
         i_halt = 0;
         i_not_load = 0;
         i_next_pc = 0;
@@ -47,8 +46,6 @@ module tb_pc;
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_enable = 1;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 1;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 0;
         
         repeat(10)
         begin
@@ -67,11 +64,10 @@ module tb_pc;
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD);
         if (o_pc != 10) $display("ERROR TEST 2"); else $display("PASS TEST 2");
-        
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_enable = 1;
+             
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 1;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 0;
-        
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_enable = 1;
+
         repeat(5)
         begin
             `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_next_pc = i_next_pc + 1;
@@ -80,8 +76,9 @@ module tb_pc;
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD);
         if (o_pc != 10) $display("ERROR TEST 3"); else $display("PASS TEST 3");
         
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 1;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 0;
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 0;
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_flush = 1;
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_flush = 0;
         
         repeat(10)
         begin

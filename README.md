@@ -17,31 +17,63 @@ Autores:
     - [5. Programar la FPGA](#5-programar-la-fpga)
     - [6. Ejectuar la aplicación de usuario](#6-ejectuar-la-aplicación-de-usuario)
 - [¿ Cómo usar la aplicación de usuario ?](#¿-cómo-usar-la-aplicación-de-usuario-)
-- [Resumen](#resumen)
-- [Especificaciones del Procesador](#especificaciones-del-procesador)
-- [Desarrollo](#desarrollo)
-    - [Arquitectura del procesador](#procesador-mips-segmentado)
-    - [Etapas del Pipeline](#etapas-del-pipeline)
-        - [1. Etapa IF](#1-etapa-if)
-        - [2. Etapa ID](#2-etapa-id)
-        - [3. Etapa EX](#3-etapa-ex)
-        - [4. Etapa MEM](#4-etapa-mem)
-        - [5. Etapa WB](#5-etapa-wb)
-    - [Control y Detención de Riesgos](#control-y-detención-de-riesgos)
-        - [Unidad de Control Principal](#unidad-de-control-principal)
-            - [Tabla de Control Principal](#tabla-de-control-principal)
-        - [Unidad de Control Alu](#unidad-de-control-alu)
-            - [Tabla de Control Alu](#tabla-de-control-alu)
-        - [Unidad de Cortocircuito](#unidad-de-cortocircuito)
-            - [Tabla de Control Cortocircuito](#tabla-de-control-cortocircuito)
-        - [Unidad de Detención de Riesgos](#unidad-de-detención-de-riesgos)
-            - [Tabla de Control Detención de Riesgos](#tabla-de-control-detención-de-riesgos)
-    - [Operación del Procesador](#operación-del-procesador)
-        - [UART](#uart)
-        - [Debugger](#debugger)
-    - [Clock Wizard](#clock-wizard)
-- [Simulaciones](#simulaciones)
-- [Resultados](#resultados)
+- [1. Resumen](#1-resumen)
+- [2. Especificaciones del Procesador](#2-especificaciones-del-procesador)
+- [3. Desarrollo](#3-desarrollo)
+    - [3.1. Arquitectura del procesador](#31-arquitectura-del-procesador)
+    - [3.2. Etapas del Pipeline](#32-etapas-del-pipeline)
+        - [3.2.1. Etapa `IF`](#321-etapa-if)
+        - [3.2.2. Etapa `ID`](#322-etapa-id)
+        - [3.2.3. Etapa `EX`](#323-etapa-ex)
+        - [3.2.4. Etapa `MEM`](#324-etapa-mem)
+        - [3.2.5. Etapa `WB`](#325-etapa-wb)
+    - [3.3. Control y Detención de Riesgos](#33-control-y-detención-de-riesgos)
+        - [3.3.1. Unidad de Control Principal](#331-unidad-de-control-principal)
+            - [3.3.1.1. Tabla de Control](#3311-tabla-de-control-principal)
+        - [3.3.2. Unidad de Control Alu](#332-unidad-de-control-alu)
+            - [3.3.2.1. Tabla de Control](#3321-tabla-de-control-alu)
+        - [3.3.3. Unidad de Cortocircuito](#333-unidad-de-cortocircuito)
+            - [3.3.3.1. Tabla de Control](#3331-tabla-de-control-cortocircuito)
+        - [3.3.4. Unidad de Detención de Riesgos](#334-unidad-de-detención-de-riesgos)
+            - [3.3.4.1 Tabla de Control](#3341-tabla-de-control-detención-de-riesgos)
+    - [3.4. Operación del Procesador](#34-operación-del-procesador)
+        - [3.4.1. UART](#341-uart)
+        - [3.4.2. Debugger](#342-debugger)
+    - [3.5. Clock Wizard](#35-clock-wizard)
+- [4. Simulaciones](#4-simulaciones)
+  	- [4.1. Etapa `IF`](#41-tests-etapa-if)
+		- [4.1.1. Test Bench para el módulo `PC`](#411-test-bench-para-el-módulo-pc)
+		- [4.1.2. Test Bench para el módulo `Instruction Memory`](#412-test-bench-para-el-módulo-instruction-memory)
+		- [4.1.3. Test Brench de integración](#413-test-bench-de-integración)
+  	- [4.2. Etapa `ID`](#42-tests-etapa-id)
+		- [4.2.1. Test Bench para el módulo `Register Bank`](#421-test-bench-para-el-módulo-register-bank)
+		- [4.2.2. Test Bench para el módulo `Main Control`](#422-test-bench-para-el-módulo-main-control)
+		- [4.2.3. Test Brench de integración](#423-test-bench-de-integración)
+  	- [4.3. Etapa `EX`](#43-tests-etapa-ex)
+		- [4.3.1. Test Bench para el módulo `ALU`](#431-test-bench-para-el-módulo-alu)
+		- [4.3.2. Test Bench para el módulo `ALU Control`](#432-test-bench-para-el-módulo-alu-control)
+		- [4.3.3. Test Brench de integración](#433-test-bench-de-integración)
+  	- [4.4. Etapa `MEM`](#44-tests-etapa-mem)
+		- [4.4.1. Test Bench para el módulo `Data Memory`](#441-test-bench-para-el-módulo-data-memory)
+		- [4.4.2. Test Brench de integración](#442-test-bench-de-integración)
+  	- [4.5. Etapa `WB`](#45-tests-etapa-wb)
+		- [4.5.1. Test Brench de integración](#451-test-bench-de-integración)
+	- [4.6. Test `Hazards Units`](#46-test-hazards-units)
+		- [4.6.1. Test Bench para el módulo `Short Circuit`](#461-test-bench-para-el-módulo-short-circuit)
+		- [4.6.2. Test Bench para el módulo `Risk Detection`](#462-test-bench-para-el-módulo-risk-detection)
+	- [4.7. Otros Tests](#47-otros-tests)
+	- [4.8. Test de Integración `Mips`](#48-test-de-integración-mips)
+		- [4.8.1. Anexo 1: Programas de Prueba](#481-anexo-1-programas-de-prueba) 
+			- [4.8.1.1. Programa 1](#4811-programa-1)
+			- [4.8.1.2. Programa 2](#4811-programa-2)
+			- [4.8.1.3. Programa 3](#4811-programa-3)
+		- [4.8.2. Anexo 2: Resultados de Ejecución](#482-anexo-2-resultados-de-ejecución)
+			- [4.8.2.1. Ejecución Programa 1](#4821-ejecución-programa-1)
+			- [4.8.2.2. Ejecución Programa 2](#4822-ejecución-programa-2)
+			- [4.8.2.3. Ejecución Programa 3](#4823-ejecución-programa-3)
+	- [4.9. Test de Sistema](#49-test-de-sistema)
+- [5. Resultados](#5-resultados)
+- [6. Referencias](#6-referencias)
         
 ## ¿ Cómo usar este repositorio ?
 
@@ -73,7 +105,7 @@ Para operar el procesador, se utiliza la aplicación `python.src/app.py`. Para e
 ## ¿ Cómo usar la aplicación de usuario ?
 
 
-## Resumen
+## 1. Resumen
 Este trabajo se desarrolló en el marco de la materia Arquitectura de Computadoras de la carrera Ingeniería en Computación de la Facultad de Ciencias Exactas, Físicas y Naturales de la Universidad Nacional de Córdoba. Consiste en la implementación de una versión simplificada de un procesador **MIPS** segmentado en una placa de desarrollo **FPGA**.
 
 Un procesador [MIPS (*Microprocessor without Interlocked Pipeline Stages*)](https://es.wikipedia.org/wiki/MIPS_(procesador)) es un tipo de microprocesador de 32 bits que utiliza una arquitectura de conjunto de instrucciones reducidas (RISC). Esta arquitectura se caracteriza por su simplicidad, ya que utiliza un número reducido de instrucciones de tamaño fijo que se ejecutan en un solo ciclo de reloj.
@@ -86,7 +118,7 @@ En este proyecto, se implementará el procesador **MIPS** en una [FPGA (Field Pr
 > El proyecto se desarrolló en el lenguaje de descripción de hardware [Verilog](https://es.wikipedia.org/wiki/Verilog) utilizando el software [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) de la empresa [Xilinx](https://www.xilinx.com/). El procesador **MIPS** se implementó en la placa de desarrollo **FPGA** [Basys 3](https://digilent.com/reference/programmable-logic/basys-3/start) de la empresa [Digilent](https://digilent.com/).
 
 
-## Especificaciones del Procesador
+## 2. Especificaciones del Procesador
 El procesador **MIPS** implementa un *pipeline* de 5 etapas, cada una de las cuales se ejecuta en un ciclo de reloj. Las etapas son las siguientes:
 
 1. **IF (Instruction Fetch)**: Se lee la instrucción de la memoria de instrucciones.
@@ -150,19 +182,19 @@ Para subsanar estos riesgos, se implementaron las siguientes técnicas:
 
 - **Stalling**: Se utiliza para resolver los riesgos de datos y de control. Consiste en detener el avance del *pipeline* hasta que se resuelva el riesgo.
 
-## Desarrollo
+## 3. Desarrollo
 
-### Arquitectura del Procesador
+### 3.1. Arquitectura del Procesador
 La arquitectura del procesador **MIPS** segmentado se muestra en la siguiente figura:
 
 <p align="center">
   <img src="imgs/MIPS_Diagram.png" alt="Procesador MIPS Segmentado">
 </p>
 
-### Etapas del Pipeline
+### 3.2. Etapas del Pipeline
 El *pipeline* se implementa a través de los modulos `if_id`, `id_ex`, `ex_mem` y `mem_wb` que se encargan de interconectar las distintas etapas de procesamiento. Estas etapas son:
 
-#### 1. Etapa IF
+#### 3.2.1. Etapa `IF`
 
 <p align="center">
   <img src="imgs/Etapa_IF.png" alt="Instruction Fetch">
@@ -178,7 +210,7 @@ Las salidas del módulo incluyen señales que indican si la memoria de instrucci
 
 Dentro del módulo, se utilizan varios componentes para realizar las operaciones necesarias. Estos incluyen un multiplexor (`mux_2_unit_pc`) para seleccionar el próximo PC, un sumador (`adder_unit`) para calcular el próximo PC secuencial, un módulo PC (`pc_unit`) para mantener y actualizar el valor del PC, y una memoria de instrucciones (`instruction_memory_unit`) para almacenar y recuperar las instrucciones a ejecutar.
 
-#### 2. Etapa ID
+#### 3.2.2. Etapa `ID`
 
 <p align="center">
   <img src="imgs/Etapa_ID.png" alt="Instruction Decode">
@@ -194,7 +226,7 @@ Las salidas del módulo incluyen señales de control que determinan el comportam
 
 Dentro del módulo, se utilizan varios componentes para realizar las operaciones necesarias. Estos incluyen un banco de registros para almacenar los valores de los registros, y varios multiplexores y decodificadores para decodificar la instrucción y generar las señales de control para las etapas posteriores del pipeline.
 
-#### 3. Etapa EX
+#### 3.2.3. Etapa `EX`
 
 <p align="center">
   <img src="imgs/Etapa_EX.png" alt="Execution">
@@ -210,7 +242,7 @@ Las salidas del módulo incluyen `o_wb_addr`, `o_alu_result`, `o_sc_bus_b`, `o_s
 
 Dentro del módulo, se utilizan varios componentes para realizar las operaciones necesarias. Estos incluyen una unidad ALU (`alu_unit`) para realizar las operaciones aritméticas y lógicas, una unidad de control ALU (`alu_control_unit`) para generar las señales de control para la ALU, y varios multiplexores (`mux_alu_src_data_a_unit`, `mux_alu_src_data_b_unit`, `mux_sc_src_a_unit`, `mux_sc_src_b_unit`, `mux_reg_dst_unit`) para seleccionar los datos de entrada para la ALU y la dirección del registro de destino para la etapa WB.
 
-#### 4. Etapa MEM
+#### 3.2.4. Etapa `MEM`
 
 <p align="center">
   <img src="imgs/Etapa_MEM.png" alt="Memory">
@@ -226,7 +258,7 @@ Las salidas del módulo incluyen `o_mem_rd` (los datos leídos de la memoria) y 
 
 Dentro del módulo, se utilizan varios componentes para realizar las operaciones necesarias. Estos incluyen una instancia de un módulo `data_memory` para representar la memoria de datos, varios multiplexores (`mux_in_mem_unit`, `mux_out_mem_unit`) para seleccionar los datos a escribir en la memoria y cómo se deben leer los datos de la memoria, y varias instancias de módulos `unsig_extend` y `sig_extend` para extender los datos leídos de la memoria a la longitud correcta, ya sea con extensión de signo o sin ella.
 
-#### 5. Etapa WB
+#### 3.2.5. Etapa `WB`
 
 <p align="center">
   <img src="imgs/Etapa_WB.png" alt="Memory">
@@ -243,10 +275,10 @@ La salida del módulo es `o_wb_data` (los datos que se deben escribir en los reg
 Dentro del módulo, se utiliza un multiplexor (`mux_wb_data`) para seleccionar entre `i_alu_result` e `i_mem_result` en función de la señal `i_mem_to_reg`. El resultado de esta selección se envía a la salida `o_wb_data`.
 
 
-### Control y Detención de Riesgos
+### 3.3. Control y Detención de Riesgos
 El control y la detención de riesgos en el procesador se implementan a través de los siguientes módulos:
 
-#### Unidad de Control Principal
+#### 3.3.1. Unidad de Control Principal
 
 <p align="center">
   <img src="imgs/Main_Control.png" alt="Main Control">
@@ -267,7 +299,7 @@ La unidad de control principal es responsable de generar las señales de control
 
 todas estas señales se concentran en el bus `o_ctrl_bus` que se utiliza para controlar las diferentes unidades funcionales del procesador.
 
-##### Tabla de Control Principal
+##### 3.3.1.1. Tabla de Control
 La tabla de verdad de la unidad de control principal se muestra a continuación:
 
 
@@ -305,7 +337,7 @@ La tabla de verdad de la unidad de control principal se muestra a continuación:
 > [!NOTE]
 > Los campos marcados con '*' indican que esos bits pueden tener cualquier valor y no afectan el resultado final. Los campos marcados con 'x' indican el estado indeterminado ya que la señal no se utiliza en esa instrucción.
 
-#### Unidad de Control ALU
+#### 3.3.2. Unidad de Control ALU
 
 <p align="center">
   <img src="imgs/Alu_Control.png" alt="ALU Control">
@@ -317,7 +349,7 @@ Las entradas del módulo son `i_funct` (el campo funct de la instrucción, que e
 
 La salida del módulo es `o_alu_ctr` (la señal de control para la ALU, que indica la operación que debe realizar).
 
-##### Tabla de Control ALU
+##### 3.3.2.1. Tabla de Control
 La tabla de verdad de la unidad de control de la ALU se muestra a continuación:
 
 | i_alu_op        | i_funct          | o_alu_ctr | operación |
@@ -350,7 +382,7 @@ La tabla de verdad de la unidad de control de la ALU se muestra a continuación:
 > [!NOTE]
 > Los campos marcados con '*' indican que esos bits pueden tener cualquier valor y no afectan el resultado final. Los campos marcados con 'x' indican el estado indeterminado ya que la señal no se utiliza en esa instrucción.
 
-#### Unidad de Cortocircuito
+#### 3.3.3. Unidad de Cortocircuito
 
 <p align="center">
   <img src="imgs/SC_Unit.png" alt="Short Circuit Unit">
@@ -374,7 +406,7 @@ La lógica del módulo verifica si las direcciones de memoria de las etapas `EX/
 
 Esto ayuda a minimizar los riesgos de datos al permitir que las instrucciones utilicen los resultados de las instrucciones anteriores tan pronto como estén disponibles, en lugar de esperar a que las instrucciones anteriores se completen y los resultados se escriban en los registros.
 
-##### Tabla de Control Cortocircuito
+##### 3.3.3.1 Tabla de Control
 La tabla de verdad de la unidad de cortocircuito se muestra a continuación:
 
 | i_ex_mem_wb | i_mem_wb_wb | i_ex_mem_addr == i_id_ex_rs | i_mem_wb_addr == i_id_ex_rs | o_sc_data_a_src |
@@ -392,7 +424,7 @@ La tabla de verdad de la unidad de cortocircuito se muestra a continuación:
 > [!NOTE]
 > En esta tabla, `EX_MEM`, `MEM_WB` e `ID_EX` representan las etapas del pipeline de donde se obtienen los datos. `i_ex_mem_addr == i_id_ex_rs` y `i_ex_mem_addr == i_id_ex_rt` representan comparaciones de igualdad entre las direcciones de memoria y los registros fuente. Si la comparación es verdadera, significa que los datos para el registro fuente correspondiente se pueden obtener de la etapa `EX_MEM`. De manera similar, `i_mem_wb_addr == i_id_ex_rs` y `i_mem_wb_addr == i_id_ex_rt` representan comparaciones de igualdad para la etapa `MEM_WB`.
 
-#### Unidad de Detención de Riesgos
+#### 3.3.4. Unidad de Detención de Riesgos
 
 <p align="center">
   <img src="imgs/Risk_Detection_Unit.png" alt="Risk Detection Unit">
@@ -413,7 +445,7 @@ Las salidas del módulo son:
 
 La lógica del módulo verifica las instrucciones en las etapas `IF/ID` y `ID/EX` del *pipeline* y activa las señales de salida correspondientes si detecta un riesgo o si se da una instrucción de salto que haga uso de los registros del procesador (potencial riesgo).
 
-##### Tabla de Control Detención de Riesgos
+##### 3.3.4.1 Tabla de Control
 
 La tabla de verdad para la unidad de detección de riesgos se basa en las señales de entrada y determina las señales de salida. Aquí está la tabla de verdad simplificada:
 
@@ -432,10 +464,10 @@ La tabla de verdad para la unidad de detección de riesgos se basa en las señal
 |----------------------------------------|------------------------------------------------------------------------------------------------------------------|------------|------------|
 | `1`                                      | `1`                                                                                                                  | `-`          | `1`          |
 | `-`                                      | `-`                                                                                                                  | `1`          | `1`          |
-### Operación del Procesador
+### 3.4. Operación del Procesador
 Para operar el procesador, se debe cargar un programa en la memoria de instrucciones. Luego, se debe iniciar el procesador y ejecutar el programa. El procesador se detendrá automáticamente cuando se ejecute la instrucción `halt`. Para que esto sea posible se implementó un módulo `uart` que permite la comunicación con el procesador a través de una terminal serial y un módulo `debugger` que controla la comunicación entre el procesador y el módulo `uart`.
 
-#### UART
+#### 3.4.1. UART
 
 <p align="center">
   <img src="imgs/UART.png" alt="UART">
@@ -458,7 +490,7 @@ El módulo `uart` consta de varias subunidades:
 
 Cada subunidad tiene su propia configuración y señales de entrada y salida, que se conectan a las entradas y salidas del módulo `uart` para formar un sistema de comunicación UART completo.
 
-#### Debugger
+#### 3.4.2. Debugger
 
 <p align="center">
   <img src="imgs/Debugger.png" alt="UART">
@@ -503,18 +535,393 @@ Sus funciones principales son:
 6. **Control de Flujo:**
    - Controla el flujo de ejecución del programa MIPS en función de los comandos recibidos y las condiciones del programa.
 
-### Clock Wizard
+### 3.5. Clock Wizard
 El [*Clock Wizard*](https://www.xilinx.com/products/intellectual-property/clocking_wizard.html) es una herramienta que se utiliza para generar la señal de reloj del sistema. En este proyecto, el *Clock Wizard* se utiliza para generar una señal de reloj con una frecuencia específica que sincroniza todas las operaciones del sistema.
 
 En un sistema MIPS, el reloj del sistema es fundamental para controlar el flujo de instrucciones y datos a través del procesador. Cada tick del reloj representa un ciclo de instrucción, durante el cual el procesador puede, por ejemplo, leer una instrucción de la memoria, decodificarla, ejecutarla y escribir los resultados de vuelta en la memoria.
 
-Además, en un sistema más complejo, el "Clock Wizard" puede generar múltiples señales de reloj con diferentes frecuencias a partir de una única señal de reloj de entrada. Esto puede ser útil en un sistema MIPS si diferentes componentes del sistema necesitan operar a diferentes velocidades. No es el caso de este proyecto.
+Además, en un sistema más complejo, el *Clock Wizard* puede generar múltiples señales de reloj con diferentes frecuencias a partir de una única señal de reloj de entrada. Esto puede ser útil en un sistema MIPS si diferentes componentes del sistema necesitan operar a diferentes velocidades. No es el caso de este proyecto.
 
-## Simulaciones
+## 4. Simulaciones
+Para garantizar el correcto funcionamiento del sistema MIPS, hemos llevado a cabo una serie de simulaciones utilizando la herramienta de simulación integrada en Vivado. Estas simulaciones nos permiten observar el comportamiento del sistema en un entorno controlado y verificar que todas las partes del sistema funcionan como se espera.
 
-## Resultados
+Para cada componente del sistema, hemos creado un *Test Bench* específico. Un *Test Bench* es un entorno de simulación que se utiliza para verificar el comportamiento de un módulo bajo diferentes condiciones de entrada. Cada *Test Bench* genera un conjunto de señales de entrada para el módulo que se está probando y luego observa las señales de salida para verificar que el módulo se comporta como se espera.
 
-## Referencias
+### 4.1. Tests Etapa `IF`
+
+#### 4.1.1 Test Bench para el módulo `PC`
+
+El módulo `pc` es responsable de generar la dirección de la siguiente instrucción a ejecutar. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Prueba de incremento**: Esta prueba verifica que la señal `o_pc` se incrementa correctamente cuando la señal `i_next_pc` se incrementa y `i_enable` está activada. Se incrementa `i_next_pc` diez veces y se espera que `o_pc` sea igual a 10.
+
+2. **Prueba de deshabilitación**: Esta prueba verifica que la señal `o_pc` no se incrementa cuando `i_enable` está desactivada. Se incrementa `i_next_pc` diez veces con `i_enable` desactivado y se espera que `o_pc` siga siendo 10.
+
+3. **Prueba de parada**: Esta prueba verifica que la señal `o_pc` no se incrementa cuando `i_halt` está activada. Se activa `i_halt`, se incrementa `i_next_pc` cinco veces y se espera que `o_pc` siga siendo 10.
+
+4. **Prueba de reinicio**: Esta prueba verifica que la señal `o_pc` se reinicia correctamente cuando `i_flush` está activada. Se activa `i_flush`, se incrementa `i_next_pc` diez veces y se espera que `o_pc` sea igual a 35.
+
+5. **Prueba de no carga**: Esta prueba verifica que la señal `o_pc` no se incrementa cuando `i_not_load` está activada. Se activa `i_not_load`, se incrementa `i_next_pc` cinco veces y se espera que `o_pc` siga siendo 35.
+
+6. **Prueba de carga**: Esta prueba verifica que la señal `o_pc` se incrementa correctamente cuando `i_not_load` está desactivada. Se desactiva `i_not_load`, se incrementa `i_next_pc` cinco veces y se espera que `o_pc` sea igual a 45.
+
+7. **Prueba de parada final**: Esta prueba verifica que la señal `o_pc` no se incrementa cuando `i_halt` está activada. Se activa `i_halt` y se espera que `o_pc` siga siendo 45.
+
+En cada prueba, si la salida es la esperada, se muestra un mensaje de que la prueba ha pasado. Si no, se muestra un mensaje de error.
+
+#### 4.1.2. Test Bench para el módulo `Instruction Memory`
+
+El módulo `instruction_memory` es responsable de almacenar y recuperar instrucciones. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Prueba de escritura**: Esta prueba verifica que las instrucciones se pueden escribir en la memoria. Se generan instrucciones aleatorias y se escriben en la memoria. Se muestra la instrucción escrita en cada ciclo.
+
+2. **Prueba de lectura**: Esta prueba verifica que las instrucciones se pueden leer de la memoria. Se leen las instrucciones de la memoria en el mismo orden en que se escribieron y se muestran.
+
+3. **Prueba de limpieza**: Esta prueba verifica que la memoria se puede limpiar correctamente. Se activa la señal `i_clear` para limpiar la memoria y se vuelve a leer las instrucciones para verificar que la memoria se ha limpiado. Luego, se vuelve a escribir y leer las instrucciones para verificar que la memoria puede ser reutilizada.
+
+En cada prueba, se muestra la instrucción escrita o leída para verificar que la operación se ha realizado correctamente.
+
+#### 4.1.3. Test Bench de integración
+El modulo `IF` es responsable de la etapa de búsqueda de instrucciones del pipeline. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Prueba 0**: Escribe 40 instrucciones aleatorias en la memoria y luego escribe una instrucción de parada.
+
+2. **Prueba 1**: Lee las primeras 10 instrucciones de la memoria y muestra la instrucción y el contador de programa (PC).
+
+3. **Prueba 2**: Desactiva la señal `i_enable` y lee las siguientes 5 instrucciones. Como `i_enable` está desactivado, el PC no debería incrementarse.
+
+4. **Prueba 3**: Activa las señales `i_enable` e `i_halt` y lee las siguientes 5 instrucciones. Como `i_halt` está activado, el PC no debería incrementarse.
+
+5. **Prueba 4**: Desactiva la señal `i_halt` y lee las siguientes 10 instrucciones. El PC debería incrementarse después de cada lectura.
+
+6. **Prueba 5**: Activa la señal `i_not_load` y lee las siguientes 5 instrucciones. Como `i_not_load` está activado, el PC no debería incrementarse.
+
+7. **Prueba 6**: Desactiva la señal `i_not_load`, reinicia el PC a 0 y lee las siguientes 10 instrucciones. El PC debería incrementarse después de cada lectura.
+
+8. **Prueba 7**: Cambia la fuente de la próxima PC a `i_next_not_seq_pc` y lee las siguientes 5 instrucciones. El PC debería ser igual a `i_next_not_seq_pc` después de la primera lectura y luego incrementarse después de cada lectura.
+
+9. **Prueba 8**: Limpia la memoria, reinicia el PC a 0 y lee las primeras 5 instrucciones. Como la memoria ha sido limpiada, todas las instrucciones leídas deberían ser 0.
+
+En cada prueba, se muestra la instrucción leída y el valor del PC para verificar que la operación se ha realizado correctamente.
+
+### 4.2. Tests Etapa `ID`
+
+#### 4.2.1 Test Bench para el módulo `Register Bank`
+El módulo `registers_bank` es responsable de almacenar y recuperar datos de los registros. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Prueba de escritura**: Esta prueba verifica que los datos se pueden escribir en los registros. Se generan datos aleatorios y se escriben en los registros. Se muestra el dato escrito y la dirección de cada registro.
+
+2. **Prueba de lectura**: Esta prueba verifica que los datos se pueden leer de los registros. Se leen los datos de los registros en el bus A y B y se muestran. Las direcciones de los registros para el bus A y B se incrementan y decrementan respectivamente en cada ciclo.
+
+En cada prueba, se muestra el dato leído o escrito y la dirección del registro para verificar que la operación se ha realizado correctamente.
+
+#### 4.2.2. Test Bench para el módulo `Main Control`
+
+**Descripción del Testbench:**
+El módulo `main_control` es responsable de generar las señales de control para coordinar orquestar el funcionamiento del procesador. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Instrucciones R-Type:**
+   - Pruebas para operaciones aritméticas y lógicas (add, sub, and, or, xor, nor, slt).
+   - Pruebas para desplazamientos lógicos y aritméticos (sll, srl, sra).
+   - Pruebas para operaciones sin signo (addu, subu).
+   - Pruebas para desplazamientos lógicos variables (sllv, srlv, srav).
+   - Pruebas para saltos y llamadas (jalr, jr).
+
+2. **Instrucciones I-Type:**
+   - Pruebas para carga y almacenamiento de datos (lw, sw).
+   - Pruebas para comparaciones y saltos condicionales (beq, bne).
+   - Pruebas para operaciones aritméticas inmediatas (addi).
+   - Pruebas para operaciones lógicas inmediatas (andi, ori, xori).
+   - Pruebas para comparaciones inmediatas (slti).
+   - Prueba para cargar una constante en la parte alta del registro (lui).
+   - Pruebas para cargar bytes, halfwords, y words desde la memoria (lb, lbu, lh, lhu, lwu).
+
+3. **Instrucciones J-Type:**
+   - Pruebas para saltos incondicionales (j, jal).
+
+4. **Condiciones de Salto:**
+   - Pruebas para condiciones de salto en instrucciones branch (beq, bne).
+   - Verificación de las señales de control en función del resultado de la comparación.
+
+5. **Escenarios Especiales:**
+   - Pruebas con instrucciones nop y condiciones especiales.
+
+Cada prueba verifica que las señales de control generadas (`o_ctrl_regs`) coincidan con los valores esperados para cada configuración de entrada. Este enfoque proporciona una cobertura completa del comportamiento del módulo `main_control` en diversos contextos, garantizando su correcta funcionalidad.
+
+#### 4.2.3. Test Brench de integración
+El modulo `ID` es responsable de la etapa de decodificación de instrucciones del pipeline. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Carga de Instrucciones Aleatorias:** Se generan aleatoriamente instrucciones y se cargan en el módulo `id`. Luego, se observa si las salidas del módulo coinciden con las expectativas. Se incluyen casos de instrucciones de tipo R y de tipo I, con diferentes funciones.
+
+2. **Pruebas de Instrucciones Específicas:** Se llevan a cabo pruebas específicas para diversas instrucciones, como `BEQ`, `BNE`, `LW`, `SW`, `J`, `JAL`, etc. Se espera que las salidas del módulo se ajusten a los resultados esperados para cada una de estas instrucciones. Se verifica la generación correcta de señales de control y los valores de las salidas.
+
+3. **Manejo de Excepciones y Caso de NOP:** También se prueba el manejo de la instrucción `NOP` (No Operation), donde el módulo debería generar señales de control específicas y no realizar cambios en el estado del procesador. Además, se verifica que las excepciones y saltos sean manejados correctamente.
+
+4. **Comparación de Resultados:** Después de ejecutar cada instrucción, se comparan las salidas generadas por el módulo con los resultados esperados. Si hay alguna discrepancia, se muestra un mensaje de error con detalles específicos para facilitar la depuración.
+
+5. **Manejo de Datos y Operaciones Aritméticas:** Se prueban instrucciones que involucran transferencia de datos (Load y Store), así como operaciones aritméticas y lógicas. Se espera que las salidas reflejen correctamente las operaciones realizadas por el módulo.
+
+### 4.3. Tests Etapa `EX`
+
+#### 4.3.1. Test Bench para el módulo `ALU`
+El módulo `alu` es responsable de realizar operaciones aritméticas y lógicas. Para probar este módulo, hemos creado un *Test Bench* que realiza varias pruebas:
+
+1. **Pruebas de Instrucciones**: Verifican el correcto funcionamiento de las instrucciones individuales, incluyendo la instrucción `NOP` (No Operation) y el manejo de excepciones y saltos.
+
+2. **Comparación de Resultados**: Después de cada instrucción, los resultados generados por el módulo se comparan con los esperados. Si hay discrepancias, se proporcionan detalles para facilitar la depuración.
+
+3. **Manejo de Datos y Operaciones Aritméticas**: Se prueban las instrucciones que involucran transferencia de datos y operaciones aritméticas y lógicas. Se espera que las salidas reflejen correctamente las operaciones realizadas por el módulo.
+
+#### 4.3.2. Test Bench para el módulo `ALU Control`
+El módulo `alu_control` es responsable de generar la señal de control para la unidad de ALU. Para probar este módulo, se realizan una serie de pruebas en las que se proporcionan todas las posibles combinaciones de señales de entrada al módulo de control de la ALU. Esto asegura una cobertura completa de las pruebas, ya que se examinan todos los escenarios posibles. Después de cada prueba, se verifica la señal de control generada por el módulo de control de la ALU. Si la señal de control es la esperada, la prueba se considera exitosa y se imprime un mensaje indicando que la prueba ha pasado. Si la señal de control no es la esperada, la prueba se considera fallida y se imprime un mensaje indicando que la prueba ha fallado.
+
+#### 4.3.3. Test Brench de integración
+Debido a la complejidad de realizar la implementación de un *Test Brench* de integración para esta etapa y que el test en si no aporata mucho valor al proyecto, se ha decidido no realizarlo.
+
+### 4.4. Tests Etapa `MEM`
+
+#### 4.4.1. Test Bench para el módulo `Data Memory`
+El módulo `data_memory` es responsable de la lectura y escritura de datos en la memoria. El banco de pruebas realiza lo siguiente:
+
+1. **Pruebas de Escritura y Lectura**: Escribe 10 valores aleatorios en la memoria y luego los lee. Los valores y las direcciones de memoria se muestran en cada operación de escritura y lectura.
+
+2. **Prueba del Bus de Depuración**: Muestra los datos de todas las direcciones de memoria en el bus de depuración.
+
+#### 4.4.2. Test Brench de integración
+El módulo `mem` es responsable de la lectura y escritura de datos en la memoria. El banco de pruebas realiza lo siguiente:
+
+1. **Pruebas de Escritura y Lectura**: Escribe 20 valores aleatorios en la memoria con diferentes fuentes de escritura (`i_mem_wr_src`) y luego los lee con diferentes fuentes de lectura (`i_mem_rd_src`). Los valores, las direcciones de memoria y las fuentes de escritura y lectura se muestran en cada operación de escritura y lectura.
+
+2. **Prueba del Bus de Depuración**: Muestra los datos de todas las direcciones de memoria en el bus de depuración.
+
+### 4.5. Tests Etapa `WB`
+
+#### 4.5.1. Test Brench de integración
+El módulo `wb` es responsable de seleccionar los datos que se escribirán en los registros. El banco de pruebas realiza lo siguiente:
+
+1. **Pruebas de Selección de Datos**: Genera dos valores aleatorios para `i_alu_result` y `i_mem_result`. Luego, cambia el valor de `i_mem_to_reg` para seleccionar entre `i_alu_result` y `i_mem_result`. 
+
+2. **Verificación de los Resultados**: Verifica si `o_wb_data` es igual a `i_mem_result` cuando `i_mem_to_reg` es 0, y si `o_wb_data` es igual a `i_alu_result` cuando `i_mem_to_reg` es 1. Si los valores son iguales, imprime un mensaje de éxito. Si no son iguales, imprime un mensaje de error.
+
+### 4.6. Test `Hazards Units`
+
+#### 4.6.1. Test Bench para el módulo `Short Circuit`
+El módulo `short_circuit` es responsable del reenvio de datos en el pipeline. El banco de pruebas realiza lo siguiente:
+
+1. **Pruebas de Cortocircuito**: Genera direcciones aleatorias y las asigna a las señales de entrada `i_ex_mem_addr`, `i_id_ex_rs`, `i_mem_wb_addr` e `i_id_ex_rt`. Luego, cambia los valores de `i_ex_mem_wb` y `i_mem_wb_wb` para simular diferentes condiciones de cortocircuito. 
+
+2. **Verificación de los Resultados**: Verifica si `o_sc_data_a_src` y `o_sc_data_b_src` son iguales a los códigos esperados en cada condición de cortocircuito. Si los códigos son iguales, imprime un mensaje de éxito. Si no son iguales, imprime un mensaje de error.
+
+#### 4.6.2. Test Bench para el módulo `Risk Detection`
+El módulo `risk_detection` es responsable de detectar y manejar situaciones que podrían causar problemas en el pipeline del procesador, como los riesgos de datos y control. El banco de pruebas realiza lo siguiente:
+
+1. **Pruebas de Detección de Riesgos**: Configura las señales de entrada para simular diferentes condiciones de riesgo, incluyendo riesgos de carga (`Load Hazard`), paradas de salto (`Jump Stop`) y detenciones (`Halt`).
+
+2. **Verificación de los Resultados**: Verifica si las señales de salida `o_not_load`, `o_jmp_stop` y `o_halt` son iguales a los valores esperados en cada condición de riesgo. Si los valores son iguales, imprime un mensaje de éxito. Si no son iguales, imprime un mensaje de error.
+
+### 4.7. Otros Tests
+Se hace uso de otros modulos auxiliares para la implementación del procesador, como por ejemplo, el módulo `mux` o el módulo `adder`. Estos modulos son de uso común en varias etapas y cuentan con sus correspondientes *Test Benches* para verificar su correcto funcionamiento. Sin embargo, debido a su simplicidad, no se han incluido en este documento el detalle de los mismos. Por otra parte, la implemetación del *Test Bench* para el módulo `debugger` se ha considerado innecesaria ya que el testeo de su funcioanmiento queda cubierto por el *Test Bench* de integración completa del sistema que se detalla en secciones posteriores. Finalmente, el modulo `uart` viene de un repositorio externo donde previamente se ha realizado un testeo completo de su funcionamiento, por tanto no se implementa un *Test Brench* para el mismo. De igual manera el testeo de este modulo tambien queda cubierto por el *Test Bench* de integración completa del sistema.
+
+### 4.8. Test de Integración `Mips`
+El modulo `mips` es responsable de la integración de todas las etapas del pipeline. Sobre este modulo se ha realizado un *Test Bench* de integración completa del procesador. Este test se ha realizado con el objetivo de verificar el correcto funcionamiento de todas las partes en conjunto. El banco de pruebas realiza lo siguiente:
+
+1. **Programas de Prueba:**
+
+	- Se definen tres programas (`first_program`, `second_program`, `third_program`) con instrucciones MIPS representadas por macros (`ADDI`, `J`, `SW`, etc.).
+
+	- Cada programa demuestra diversas operaciones y situaciones, como operaciones aritméticas, saltos, operaciones de carga y almacenamiento, y llamadas a subrutinas.
+
+2. **Ejecución de Programas:**
+
+	- Los programas se ejecutan secuencialmente en el procesador MIPS (`mips`).
+
+	- Cada instrucción se carga en la memoria de instrucciones y se ejecuta en ciclos de reloj.
+
+3. **Monitoreo Continuo:**
+
+   - Durante la ejecución, se monitorean los cambios en los registros y la memoria de datos.
+
+   - Se verifica que los cambios en los registros y la memoria coincidan con las expectativas.
+
+4. **Finalización del Programa:**
+
+   - Se monitorea la señal `o_end_program` para determinar cuándo finaliza la ejecución de un programa.
+
+   - Se registra y muestra información relevante al finalizar cada programa.
+
+5. **Reset y Flush:**
+
+   - Se prueba la funcionalidad de reset (`i_reset`) y flush (`i_flush`) del procesador.
+
+6. **Control de Flujo:**
+
+   - Se prueban escenarios de control de flujo, como saltos incondicionales (`J`), llamadas a subrutinas (`JAL`, `JALR`), y saltos condicionales (`BEQ`, `BNE`).
+
+7. **Manejo de Halts:**
+
+   - Se prueba la detección y manejo de la instrucción de parada (`HALT`).
+
+   - Se verifica que la ejecución se detiene correctamente.
+
+8. **Verificación de Memoria:**
+
+   - Se verifica que las operaciones de carga y almacenamiento (`LW`, `SW`, `LBU`, etc.) se realizan correctamente en la memoria de datos.
+
+9. **Monitoreo Temporal:**
+
+    - Se monitorea el estado de registros y memoria en intervalos regulares de tiempo.
+
+10. **Resultados en Consola:**
+
+    - Se muestra información detallada en la consola para cada cambio en registros y memoria.
+
+    - La información incluye el número de ciclo (`j`), el registro o dirección de memoria afectado y los valores antes y después del cambio.
+
+#### 4.8.1. Anexo 1: Programas de Prueba
+
+##### 4.8.1.1. Programa 1
+```assembly
+ADDI R4,R0,7123
+ADDI R3,R0,85
+ADDU R5,R3,R4
+SUBU R6,R4,R3
+AND  R7,R4,R3
+OR   R8,R3,R4
+XOR  R9,R4,R3
+NOR  R10,R4,R3
+SLT  R11,R3,R4
+SLL  R12,R10,2
+SRL  R13,R10,2
+SRA  R14,R10,2
+SLLV R15,R10,R11
+SRLV R16,R10,R11
+SRAV R17,R10,R11
+SB   R13,4(R0)
+SH   R13,8(R0)
+SW   R13,12(R0)
+LB   R18,12(R0)
+ANDI R19,R18,6230
+LH   R20,12(R0)
+ORI  R21,R20,6230
+LW   R22,12(R0)
+XORI R23,R22,6230
+LWU  R24,12(R0)
+LUI  R25,6230
+LBU  R26,12(R0)
+SLTI R27,R19,22614
+HALT
+```
+
+##### 4.8.1.2. Programa 2
+```assembly
+J	5
+ADDI	R3,R0,85
+NOP
+NOP
+NOP
+JAL 	8
+ADDI	R4,R0,95
+NOP
+ADDI	R5,R0,56
+JR	R5
+ADDI	R2,R0,2
+NOP
+NOP
+NOP
+ADDI	R6,R0,80
+JALR	R30,R6
+ADDI	R1,R0,0
+NOP
+NOP
+NOP
+ADDI	R7,R0,15
+ADDI	R8,R0,8
+ADDI	R8,R8,1
+SW	R7,0(8)
+BNE	R8,R7,-3
+BEQ	R8,R7,2
+ADDI	R9,R0,8
+ADDI	R10,R0,8
+ADDI	R11,R0,8
+HALT
+```
+
+##### 4.8.1.3. Programa 3
+```assembly
+ADDI	R3,R0,85
+JAL	14
+ADDI	R4,R0,86
+J	16
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+ADDI	R5,R0,87
+JALR	R30,R31
+HALT
+```
+
+#### 4.8.2. Anexo 2: Resultados de Ejecución
+
+##### 4.8.2.1. Ejecución Programa 1
+
+<p align="center">
+  <img src="imgs/TB_MIPS_PG1.png" alt="UART">
+</p>
+
+##### 4.8.2.2. Ejecución Programa 2
+
+<p align="center">
+  <img src="imgs/TB_MIPS_PG2.png" alt="UART">
+</p>
+
+##### 4.8.2.3. Ejecución Programa 3
+
+<p align="center">
+  <img src="imgs/TB_MIPS_PG3.png" alt="UART">
+</p>
+
+
+### 4.9. Test de Sistema
+El modulo `top` es responsable de la integración de todas las partes del sistema (*MIPS*, *Debugger*, *UART* y *Clock Wizard*). Sobre este modulo se ha realizado un *Test Bench* de sistema completo. El banco de pruebas realiza lo siguiente:
+
+1. **Programa de Prueba:**
+   
+   - Se define un programa de instrucciones (`first_program`) representado por macros (`ADDI`, `SB`, `LW`, etc.). El programa de prueba utilizado es el [programa 1](#4811-programa-1) de las pruebas de integración del módulo `mips`.
+
+   - El programa simula una secuencia de operaciones MIPS, y los resultados se transmiten y reciben a través de la interfaz serial.
+
+2. **Tareas de Envío y Recepción:**
+   - Se implementan tareas (`send` y `receive`) para simular la transmisión y recepción de datos a través de la interfaz serial.
+
+   - La tarea `send` simula la transmisión de un conjunto de datos.
+
+   - La tarea `receive` simula la recepción de datos.
+
+3. **Secuencia de Pruebas:**
+   - Se envía un comando inicial a través de la interfaz serial para indicar sistema que comience a recibir instrucciones.
+
+   - Se envían las instrucciones MIPS definidas en `first_program` a través de la interfaz serial.
+
+   - Se enviá el comando de ejecución a través de la interfaz serial para indicar al sistema que comience a ejecutar las instrucciones.
+
+   - Se espera que el sistema procese las instrucciones y envíe los resultados de vuelta.
+
+4. **Recepción y Visualización de Resultados:**
+
+   - Después de la transmisión de instrucciones, se inicia un ciclo de recepción para recibir los resultados procesados por el sistema.
+
+   - Se muestra en la consola el contenido de `r_data` que contiene los resultados recibidos.
+
+## 5. Resultados
+
+## 6. Referencias
 
 - Patterson, D. A., & Hennessy, J. L. (2013). Computer Organization and Design MIPS Edition: The Hardware/Software Interface. Morgan Kaufmann.
 

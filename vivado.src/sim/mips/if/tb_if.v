@@ -4,7 +4,7 @@
 
 module tb_if;
 
-    localparam MEM_SIZE_IN_WORDS  = 20;
+    localparam MEM_SIZE_IN_WORDS  = 40;
     localparam WORD_SIZE_IN_BYTES = 4;
 
     reg                               i_clk;
@@ -34,7 +34,6 @@ module tb_if;
     (
         .i_clk             (i_clk),
         .i_reset           (i_reset),
-        .i_start           (i_start),
         .i_halt            (i_halt),
         .i_not_load        (i_not_load),
         .i_enable          (i_enable),
@@ -58,7 +57,6 @@ module tb_if;
         $srandom(9481596);
 
         i_reset = 1;
-        i_start = 0;
         i_halt = 0;
         i_not_load = 0;
         i_next_not_seq_pc = 0;
@@ -73,7 +71,7 @@ module tb_if;
 
         $display("\nTEST 0:");
         
-        repeat(10)
+        repeat(40)
         begin
                                         i_instruction = $urandom;
                                         i_write_mem = 1;
@@ -86,8 +84,6 @@ module tb_if;
         `TICKS_DELAY_1(`CLK_PERIOD) i_write_mem = 0;
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_enable = 1;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 1;
-        `TICKS_DELAY_1(`CLK_PERIOD) i_start = 0;
 
         $display("\nTEST 1:");
 
@@ -111,8 +107,7 @@ module tb_if;
 
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_enable = 1;
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 1;
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 0;
-
+       
         repeat(5)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
@@ -120,10 +115,9 @@ module tb_if;
         end
 
         $display("\nTEST 4:");
-
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_start = 1;
-        `TICKS_DELAY_1(`CLK_PERIOD) i_start = 0;
         
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 0;
+
         repeat(10)
         begin
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
@@ -163,10 +157,13 @@ module tb_if;
             `TICKS_DELAY_1(`CLK_PERIOD) $display("Read: %h", o_instruction); $display("PC: %h", o_next_seq_pc);
              i_next_seq_pc = i_next_seq_pc + 4;
         end
-        
-        $display("\nTEST 8:");
 
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_halt = 1;
+        $display("\nTEST 8:");
+        
+        i_next_seq_pc = 0;
+        
+        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_clear_mem = 1;
+        `TICKS_DELAY_1(`CLK_PERIOD)             i_clear_mem = 0;
 
         repeat(5)
         begin
@@ -175,7 +172,7 @@ module tb_if;
         end
         
         `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD)
-        
+
         $finish;
     end
 
