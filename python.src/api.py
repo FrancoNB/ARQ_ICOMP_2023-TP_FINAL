@@ -90,7 +90,9 @@ def compile_program():
             
 def upload_program():
     uart.write(76)
-
+    
+    print()
+    
     for i in range (0, len(parser.instructions), 4):
         for j in range (3, -1, -1):
             index = i+j
@@ -99,9 +101,16 @@ def upload_program():
                 uart.write(byte)
             else: 
                 break
+        print()
     
-    print (uart.read())
-            
+    print_bytes_as_hex(uart.read())
+    
+def print_bytes_as_hex(byte_sequence):
+    for byte in byte_sequence:
+        hex_representation = hex(byte)[2:].zfill(2)
+        print(hex_representation, end=' ')
+    print() 
+
 signal.signal(signal.SIGINT, sigint_handler)
 
 if __name__ == "__main__":

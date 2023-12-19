@@ -21,7 +21,7 @@ module pc
     reg [`BITS_FOR_STATE_COUNTER_PC - 1 : 0] state, state_next; 
     reg [PC_SIZE - 1 : 0]                    pc;
 
-    always @ (negedge i_clk or posedge i_reset or posedge i_flush or posedge i_clear) 
+    always @ (negedge i_clk) 
     begin
         if(i_reset || i_flush || i_clear)
             state <= `STATE_PC_IDLE;
@@ -31,15 +31,12 @@ module pc
 
     always @ (*) 
     begin
-        if(i_reset || i_flush || i_clear)
-            pc = `CLEAR(PC_SIZE);
-            
         state_next = state;
 
         case(state)
             `STATE_PC_IDLE: 
                 begin
-                    pc = `CLEAR(PC_SIZE);
+                    pc         = `CLEAR(PC_SIZE);
                     state_next = `STATE_PC_NEXT;
                 end
 

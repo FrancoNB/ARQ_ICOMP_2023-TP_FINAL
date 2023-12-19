@@ -5,10 +5,10 @@
 
 ## Clock signal
 set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports i_clk]
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports i_clk]
+create_clock -add -name sys_clk_pin -period 20.00 -waveform {0 5} [get_ports i_clk]
 
 
-## Switches
+## SwitchesW
 #set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports i_reset]
 #set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {sw[1]}]
 #set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports {sw[2]}]
@@ -34,8 +34,8 @@ set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports o_status
 set_property -dict { PACKAGE_PIN V19   IOSTANDARD LVCMOS33 } [get_ports o_status_led[3]]
 set_property -dict { PACKAGE_PIN W18   IOSTANDARD LVCMOS33 } [get_ports o_status_led[4]]
 set_property -dict { PACKAGE_PIN U15   IOSTANDARD LVCMOS33 } [get_ports o_status_led[5]]
-set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports o_status_led[6]]
-set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports o_status_led[7]]
+#set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports o_status_led[6]]
+#set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports o_status_led[7]]
 #set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports o_instruction[8]]
 #set_property -dict { PACKAGE_PIN V3    IOSTANDARD LVCMOS33 } [get_ports o_instruction[9]]
 #set_property -dict { PACKAGE_PIN W3    IOSTANDARD LVCMOS33 } [get_ports o_instruction[10]]

@@ -23,19 +23,21 @@ module data_memory
 
     integer i = 0;
 
-    always@(negedge i_clk or posedge i_reset or posedge i_flush) 
+    always@(negedge i_clk) 
     begin
         if (i_reset || i_flush) 
             begin
                 for (i = 0; i < 2**ADDR_SIZE; i = i + 1)
                     memory[i] <= `CLEAR(SLOT_SIZE);
+
+                read_data <= `CLEAR(SLOT_SIZE);
             end
         else
             begin
                 if (i_wr_rd)
-                    memory[i_addr] = i_data;
+                    memory[i_addr] <= i_data;
                 else
-                    read_data = memory[i_addr];
+                    read_data <= memory[i_addr];
             end
     end
 

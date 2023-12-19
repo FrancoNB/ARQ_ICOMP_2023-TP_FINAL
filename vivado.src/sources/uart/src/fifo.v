@@ -36,7 +36,7 @@ module fifo
     assign r_data = array_reg[r_ptr_reg];
     assign wr_en  = wr & ~full_reg;
     
-    always @(posedge clk, posedge reset)
+    always @(posedge clk)
     begin
         if (reset)
             begin

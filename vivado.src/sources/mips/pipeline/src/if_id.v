@@ -24,7 +24,7 @@ module if_id
     reg [INSTRUCTION_SIZE - 1 : 0] instruction;
     reg                            halt;
 
-    always @(posedge i_clk or posedge i_reset or posedge i_flush) 
+    always @(posedge i_clk) 
     begin
         if (i_reset || i_flush)
             begin

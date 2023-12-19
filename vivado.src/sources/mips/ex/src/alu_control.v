@@ -40,10 +40,11 @@ module alu_control
                     default          : alu_ctr = `CODE_ALU_EX_NOP;
                 endcase
             
-            `CODE_ALU_CTR_LOAD_TYPE   : alu_ctr = `CODE_ALU_EX_ADD;
-            `CODE_ALU_CTR_STORE_TYPE  : alu_ctr = `CODE_ALU_EX_ADD;
+            `CODE_ALU_CTR_LOAD_TYPE   |
+            `CODE_ALU_CTR_STORE_TYPE  |
+            `CODE_ALU_CTR_ADDI        : 
+                alu_ctr = `CODE_ALU_EX_ADD;
             `CODE_ALU_CTR_JUMP_TYPE   : alu_ctr = `CODE_ALU_EX_SC_B;
-            `CODE_ALU_CTR_ADDI        : alu_ctr = `CODE_ALU_EX_ADD;
             `CODE_ALU_CTR_ANDI        : alu_ctr = `CODE_ALU_EX_AND;
             `CODE_ALU_CTR_ORI         : alu_ctr = `CODE_ALU_EX_OR;
             `CODE_ALU_CTR_XORI        : alu_ctr = `CODE_ALU_EX_XOR;

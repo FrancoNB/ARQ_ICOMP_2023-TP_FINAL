@@ -23,7 +23,7 @@ module _if
         input  wire [PC_SIZE - 1 : 0]                         i_next_seq_pc,
         output wire                                           o_full_mem,
         output wire                                           o_empty_mem,
-        output wire [PC_SIZE - 1 : 0]                         o_instruction,
+        output wire [WORD_SIZE_IN_BYTES * `BYTE_SIZE - 1 : 0] o_instruction,
         output wire [PC_SIZE - 1 : 0]                         o_next_seq_pc
     );
     

@@ -25,7 +25,7 @@ module registers_bank
     
     integer i = 0;
     
-    always @(negedge i_clk or posedge i_reset or posedge i_flush) 
+    always @(negedge i_clk) 
     begin
         if (i_reset || i_flush)
             begin

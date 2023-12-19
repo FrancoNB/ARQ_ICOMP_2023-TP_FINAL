@@ -24,7 +24,7 @@ module uart_tx
     reg [`B_REG_SIZE - 1 : 0]     b_reg, b_next;
     reg                           tx_reg, tx_next;
     
-    always @(posedge clk or posedge reset) 
+    always @(posedge clk) 
     begin 
         if (reset)
             begin

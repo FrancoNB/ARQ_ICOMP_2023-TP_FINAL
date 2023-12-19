@@ -18,7 +18,7 @@ module uart_brg
     reg  [BAUDRATE_PRECISION - 1 : 0] counter_reg;
     wire [BAUDRATE_PRECISION - 1 : 0] counter_next;
     
-    always @ (posedge clk or posedge reset) 
+    always @ (posedge clk) 
     begin
         if (reset)
             counter_reg <= 0;

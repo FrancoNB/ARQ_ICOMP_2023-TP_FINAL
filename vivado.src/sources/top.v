@@ -9,23 +9,22 @@ module top
         parameter MIPS_DATA_MEMORY_ADDR_SIZE                 = 5,
         parameter UART_DATA_BITS                             = 8,
         parameter UART_SB_TICKS                              = 16,
-        parameter UART_DVSR_BIT                              = 7,
-        parameter UART_DVSR                                  = 108,
-        parameter UART_FIFO_SIZE                             = 256
+        parameter UART_DVSR_BIT                              = 6,
+        parameter UART_DVSR                                  = 54,
+        parameter UART_FIFO_SIZE                             = 512
     )
     (
         input  wire         i_clk, 
         input  wire         i_reset,
         input  wire         i_rx,
         output wire         o_tx,
-        output wire [7 : 0] o_status_led
+        output wire [5 : 0] o_status_led
     );
 
 	localparam MIPS_REGISTER_CONTETNT_BUS_SIZE = MIPS_REGISTERS_BANK_SIZE * MIPS_BUS_SIZE;
 	localparam MIPS_MEMORY_CONTETNT_BUS_SIZE   = 2**MIPS_DATA_MEMORY_ADDR_SIZE * MIPS_BUS_SIZE;
 
-	wire 					      	  	     	   wiz_clk;
-	wire                                           wiz_locked;
+	//wire 					      	  	     	   wiz_clk;
 
 	wire 					      	  	           mips_flush;
 	wire 					      	  	           mips_clear_program;
@@ -45,12 +44,12 @@ module top
 	wire [UART_DATA_BITS - 1 : 0] 	  		 	   uart_data_wr;
 	wire [UART_DATA_BITS - 1 : 0] 	  		 	   uart_data_rd;
 
-	clk_wiz_0 clk_wiz_unit 
+	/*clk_wiz_1 clk_wiz_unit 
 	(
 	    .i_clk (i_clk),
 	    .reset (i_reset),
 		.o_clk (wiz_clk)
-	);
+	);*/
 
     uart
     #(
@@ -62,7 +61,7 @@ module top
     )
     uart_unit
     (
-      .clk          (wiz_clk),
+      .clk          (i_clk),
       .reset        (i_reset),
       .rd_uart      (uart_rd),
       .wr_uart      (uart_wr),
@@ -84,7 +83,7 @@ module top
 	)
 	debugger_unit
 	(
-		.i_clk           			(wiz_clk),
+		.i_clk           			(i_clk),
 		.i_reset         			(i_reset),
 		.i_uart_empty	 			(uart_rx_empty),
 		.i_uart_full	 			(uart_tx_full),
@@ -117,7 +116,7 @@ module top
     )
     mips_unit
     (
-        .i_clk           (wiz_clk),
+        .i_clk           (i_clk),
         .i_reset         (i_reset),
         .i_enable        (mips_enabled),
         .i_flush         (mips_flush),

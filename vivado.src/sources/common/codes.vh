@@ -78,17 +78,17 @@
     `define CODE_MAIN_CTR_MEM_TO_REG_NOTHING       1'bx   // Nothing to register
 
     /** --------------------------- Codes for ALU control --------------------------- **/
-
-    `define CODE_ALU_CTR_R_TYPE            3'b110 // R-Type instructions
+    
     `define CODE_ALU_CTR_LOAD_TYPE         3'b000 // Load instructions
     `define CODE_ALU_CTR_STORE_TYPE        3'b000 // Store instructions
-    `define CODE_ALU_CTR_BRANCH_TYPE       3'b001 // Branch instructions
-    `define CODE_ALU_CTR_JUMP_TYPE         3'b111 // Jump instructions
     `define CODE_ALU_CTR_ADDI              3'b000 // Add immediate instruction
+    `define CODE_ALU_CTR_BRANCH_TYPE       3'b001 // Branch instructions
     `define CODE_ALU_CTR_ANDI              3'b010 // And immediate instruction
     `define CODE_ALU_CTR_ORI               3'b011 // Or immediate instruction
     `define CODE_ALU_CTR_XORI              3'b100 // Xor immediate instruction
     `define CODE_ALU_CTR_SLTI              3'b101 // Set less than immediate instruction
+    `define CODE_ALU_CTR_R_TYPE            3'b110 // R-Type instructions
+    `define CODE_ALU_CTR_JUMP_TYPE         3'b111 // Jump instructions
     `define CODE_ALU_CTR_UNDEFINED         3'bxxx // Undefined instruction
 
     `define CODE_ALU_CTR_SRC_A_SHAMT       1'b0  // Shamt
@@ -128,5 +128,23 @@
     `define CODE_SC_DATA_SRC_MEM_WB  2'b01 // Data source is MEM/WB
     `define CODE_SC_DATA_SRC_EX_MEM  2'b10 // Data source is EX/MEM
     `define CODE_SC_DATA_SRC_NOTHING 2'bxx // Data source is nothing
+
+    /* --------------------------- Codes for Debugger --------------------------- **/
+
+    `define DEBUGGER_NO_CICLE_MASK                  8'b00000000
+    `define DEBUGGER_NO_ADDRESS_MASK                8'b00000000
+
+    `define DEBUGGER_ERROR_PREFIX                   8'b11111111
+    `define DEBUGGER_INFO_PREFIX                    8'b00000000
+
+    `define DEBUGGER_INFO_END_PROGRAM               32'b00000000000000000000000000000001
+    `define DEBUGGER_INFO_LOAD_PROGRAM              32'b00000000000000000000000000000010
+
+    `define DEBUGGER_ERROR_INSTRUCTION_MEMORY_FULL  32'b00000000000000000000000000000001
+    `define DEBUGGER_ERROR_NO_PROGRAM_LOAD          32'b00000000000000000000000000000010
+    `define DEBUGGER_ERROR_BAD_REGISTER_ADDRESS     32'b00000000000000000000000000000011
+    `define DEBUGGER_ERROR_BAD_MEMORY_ADDRESS       32'b00000000000000000000000000000100
+    `define DEBUGGER_ERROR_UNKNOWN_COMMAND          32'b00000000000000000000000000000101
+    `define DEBUGGER_ERROR_ALREADY_PROGRAM_LOAD     32'b00000000000000000000000000000110
 
 `endif // __CODES_VH__

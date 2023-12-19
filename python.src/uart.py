@@ -55,8 +55,9 @@ def select_baudrate():
             print("\nEntrada no válida. Ingrese un número válido.")
             
 def write(data_to_send):
-    serial_port.write(bytes(data_to_send))
-    time.sleep(0.01)
+    serial_port.write(data_to_send)
+    hex_representation = hex(data_to_send)[2:].zfill(2)
+    print(hex_representation, end=' ')
 
 def read():
-    return int.from_bytes(serial_port.read(), byteorder='big', signed=True)
+    return serial_port.read(7)

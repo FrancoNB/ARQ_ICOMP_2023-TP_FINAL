@@ -21,45 +21,32 @@ module instruction_memory
     );
 
     localparam WORD_SIZE_IN_BITS   = WORD_SIZE_IN_BYTES * `BYTE_SIZE;
-    localparam MEM_SIZE_IN_BITS    = MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BITS + WORD_SIZE_IN_BITS;
+    localparam MEM_SIZE_IN_BITS    = MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BITS;
     localparam POINTER_SIZE        = $clog2(MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES);
     localparam MAX_POINTER_DIR     = MEM_SIZE_IN_WORDS * WORD_SIZE_IN_BYTES;
 
     reg [POINTER_SIZE - 1 : 0]     write_pointer;
     reg [MEM_SIZE_IN_BITS - 1 : 0] memory_buffer;
-    reg                            full, empty;
-    
-    always @(posedge i_clk or posedge i_reset or posedge i_clear) 
+
+    always @(posedge i_clk) 
     begin
         if (i_reset || i_clear) 
             begin
                 memory_buffer <= `CLEAR(MEM_SIZE_IN_BITS);
-                full          <= `LOW;
-                empty         <= `HIGH;
                 write_pointer <= `CLEAR(POINTER_SIZE);
             end 
         else 
             begin
-                if(~full && i_instruction_write)
+                if(i_instruction_write)
                     begin
-                        empty = `LOW;
-                        memory_buffer = { i_instruction, memory_buffer[MEM_SIZE_IN_BITS - 1 : WORD_SIZE_IN_BITS] };
-
-                        if (i_instruction == `INSTRUCTION_HALT)  
-                                memory_buffer = memory_buffer >> (WORD_SIZE_IN_BITS * ((MAX_POINTER_DIR - write_pointer) / WORD_SIZE_IN_BYTES ));
-                        else 
-                            begin
-                                if(write_pointer == MAX_POINTER_DIR)
-                                    full = `HIGH;
-                                else
-                                    write_pointer = write_pointer + WORD_SIZE_IN_BYTES;
-                            end
+                        memory_buffer[`BYTE_SIZE * write_pointer +: WORD_SIZE_IN_BITS] = i_instruction;
+                        write_pointer                                                  = write_pointer + WORD_SIZE_IN_BYTES;
                     end
             end
     end
 
     assign o_instruction = memory_buffer[i_pc * `BYTE_SIZE +: WORD_SIZE_IN_BITS];
-    assign o_full        = full;
-    assign o_empty       = empty;
+    assign o_full        = write_pointer == MAX_POINTER_DIR;
+    assign o_empty       = write_pointer == `CLEAR(POINTER_SIZE);
 
 endmodule

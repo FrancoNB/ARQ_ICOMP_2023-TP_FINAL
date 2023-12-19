@@ -22,7 +22,7 @@ module uart_rx
     reg [`N_REG_SIZE - 1 : 0]          n_reg, n_next;
     reg [`B_REG_SIZE - 1 : 0]          b_reg, b_next;
     
-    always @(posedge clk or posedge reset) 
+    always @(posedge clk) 
     begin 
         if (reset)
             begin

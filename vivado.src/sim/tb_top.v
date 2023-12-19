@@ -4,19 +4,23 @@
 
 module tb_top;
     
-    localparam WIZ_CLK_PERIOD = 5;
-    localparam BUS_SIZE       = 32;
-    localparam DATA_BITS      = 8;
-    localparam SB_TICKS       = 16;
-    localparam DVSR           = 108;
-
+    localparam CLK_PERIOD = 20;
+    localparam BUS_SIZE   = 32;
+    localparam DATA_BITS  = 8;
+    localparam SB_TICKS   = 16;
+    localparam DVSR       = 27;
+ 
     reg          i_clk; 
     reg          i_reset;
     reg          i_rx;
     wire         o_tx;
-    wire [7 : 0] o_status_led;
+    wire [5 : 0] o_status_led;
     
-    top top_unit
+    top
+    #(
+        .UART_DVSR (DVSR)
+    )
+    top_unit
     (
         .i_clk        (i_clk),
         .i_reset      (i_reset),
@@ -25,7 +29,7 @@ module tb_top;
         .o_status_led (o_status_led)
     );
 
-    `CLK_TOGGLE(i_clk, `CLK_PERIOD)
+    `CLK_TOGGLE(i_clk, CLK_PERIOD)
     
     integer i, j, k;
 
@@ -39,37 +43,37 @@ module tb_top;
         begin 
             i_rx = `LOW;
              
-            #(DVSR * SB_TICKS * WIZ_CLK_PERIOD);
+            #(DVSR * SB_TICKS * CLK_PERIOD);
             
             for (i = 0; i < DATA_BITS; i = i + 1)
                 begin
                     i_rx = w_byte[i];
-                    #(DVSR * SB_TICKS * WIZ_CLK_PERIOD); 
+                    #(DVSR * SB_TICKS * CLK_PERIOD); 
                 end
             
             i_rx = `HIGH;
             
-            #(DVSR * SB_TICKS * WIZ_CLK_PERIOD);
+            #(DVSR * SB_TICKS * CLK_PERIOD);
         end
     endtask
     
     task automatic receive();
         begin
             while (o_tx)
-                `TICKS_DELAY_1(`CLK_PERIOD);
+                `TICKS_DELAY_1(CLK_PERIOD);
                 
-            #(DVSR * SB_TICKS * WIZ_CLK_PERIOD);
+            #(DVSR * SB_TICKS * CLK_PERIOD);
             
             for (i = 0; i < DATA_BITS; i = i + 1)
                 begin
                     r_byte[i] = o_tx;
-                    #(DVSR * SB_TICKS * WIZ_CLK_PERIOD);
+                    #(DVSR * SB_TICKS * CLK_PERIOD);
                 end
             
             while (~o_tx)
-                `TICKS_DELAY_1(`CLK_PERIOD);
+                `TICKS_DELAY_1(CLK_PERIOD);
                 
-            #(DVSR * SB_TICKS * WIZ_CLK_PERIOD);
+            #(DVSR * SB_TICKS * CLK_PERIOD);
         end
     endtask
 
@@ -78,7 +82,7 @@ module tb_top;
             begin
                 w_byte = w_data[k * 8 +: 8];
                 send();
-                `TICKS_DELAY_1(`CLK_PERIOD);
+                `TICKS_DELAY_1(CLK_PERIOD);
             end
     endtask
 
@@ -87,7 +91,6 @@ module tb_top;
             begin
                 receive();
                 r_data[k * 8 +: 8] = r_byte;
-                `TICKS_DELAY_1(`CLK_PERIOD);
             end
     endtask
 
@@ -134,7 +137,7 @@ module tb_top;
 
         j = 0;
         
-        `RANDOM_TICKS_DELAY_MAX_20(`CLK_PERIOD) i_reset = 0;
+        `RANDOM_TICKS_DELAY_MAX_20(CLK_PERIOD) i_reset = 0;
         
         w_data = "L";
         send_4byte();
@@ -147,21 +150,22 @@ module tb_top;
         end
 
         receive_7byte();
+        $display("r_data = %h", r_data);
 
         w_data = "E";
         send_4byte();
-        
-        `TICKS_DELAY(`CLK_PERIOD, 100);
 
         repeat(64)
         begin
             receive_7byte();
             $display("r_data = %h", r_data);
         end
-
         
-        `TICKS_DELAY_10(`CLK_PERIOD);
-
+        receive_7byte();
+        $display("r_data = %h", r_data);
+        
+        `TICKS_DELAY_10(CLK_PERIOD);
+ 
         $finish;
     end
     
