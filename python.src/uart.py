@@ -8,7 +8,7 @@ class Uart():
         self.serial_port = serial_port
         self.baudrate = baudrate
         
-        self.serial_port = serial.Serial(port=self.serial_port_name,
+        self.serial_port = serial.Serial(port=self.serial_port,
                                          baudrate=self.baudrate,
                                          parity=parity,
                                          stopbits=stopbits,
