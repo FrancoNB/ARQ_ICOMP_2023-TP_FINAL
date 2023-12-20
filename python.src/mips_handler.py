@@ -204,14 +204,14 @@ class MipsHandler():
     def get_memory_by_cicle_and_addr(self, cicle: int, addr: int):
         return list(filter(lambda memory: memory['cicle'] == cicle and memory['addr'] == addr, self.memory))
     
-    def get_register_summary(self):
+    def get_register_summary(self, addr: int):
         summary = []
         
         last_cicle = self.registers.index(self.registers.count() - 1)[0]
         
         for cicle in range(1, last_cicle):
-            prev_cicle_registers = self.get_registers_by_cicle(cicle - 1)
-            cicle_registers = self.get_registers_by_cicle(cicle)
+            prev_cicle_registers = self.get_memory_by_cicle_and_addr(cicle - 1, addr)
+            cicle_registers = self.get_memory_by_cicle_and_addr(cicle, addr)
             
             for register in cicle_registers:
                 if register['content'] != prev_cicle_registers[register['addr']]['content']:
@@ -219,14 +219,14 @@ class MipsHandler():
                     
         return summary
     
-    def get_memory_summary(self):
+    def get_memory_summary(self, addr: int):
         summary = []
         
         last_cicle = self.memory.index(self.memory.count() - 1)[0]
         
         for cicle in range(1, last_cicle):
-            prev_cicle_memory = self.get_memory_by_cicle(cicle - 1)
-            cicle_memory = self.get_memory_by_cicle(cicle)
+            prev_cicle_memory = self.get_memory_by_cicle_and_addr(cicle - 1, addr)
+            cicle_memory = self.get_memory_by_cicle_and_addr(cicle, addr)
             
             for memory in cicle_memory:
                 if memory['content'] != prev_cicle_memory[memory['addr']]['content']:
