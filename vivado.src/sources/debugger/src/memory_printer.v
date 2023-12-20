@@ -28,7 +28,6 @@ module memory_printer
     reg [DATA_OUT_BUS_SIZE - 1 : 0] data_wr, data_wr_next;
     reg [MEMORY_POINTER_SIZE : 0]   memory_pointer, memory_pointer_next;
     reg                             _end, end_next;
-    reg                             wr_wait, wr_wait_next;
     
     always @(posedge i_clk) 
     begin
@@ -39,7 +38,6 @@ module memory_printer
                 data_wr        <= `CLEAR(DATA_OUT_BUS_SIZE);
                 start_wr       <= `LOW;
                 _end           <= `LOW;
-                wr_wait        <= `LOW;
             end
         else
             begin
@@ -48,7 +46,6 @@ module memory_printer
                 data_wr        <= data_wr_next;
                 start_wr       <= start_wr_next;
                 _end           <= end_next;
-                wr_wait        <= wr_wait_next;
             end
     end
     
@@ -59,7 +56,6 @@ module memory_printer
         data_wr_next        = data_wr;
         start_wr_next       = start_wr;
         end_next            = _end;
-        wr_wait_next        = wr_wait;
     
         case (state)
     
@@ -79,7 +75,7 @@ module memory_printer
                         data_wr_next        = {`DEBUGGER_INFO_PREFIX, i_clk_cicle , { { (UART_BUS_SIZE - MEMORY_POINTER_SIZE) { 1'b0 } }, memory_pointer }, i_memory_conntent[memory_pointer * MEMORY_SLOT_SIZE +: MEMORY_SLOT_SIZE] };
                         memory_pointer_next = memory_pointer + 1;
                         start_wr_next       = `HIGH;
-                        state_next          = `MEMORY_PRINTER_STATE_WAIT_WR;
+                        state_next          = `MEMORY_PRINTER_STATE_WAIT_WR_TRANSITION;
                     end
                 else
                     begin
@@ -89,16 +85,17 @@ module memory_printer
                     end
             end
 
+            `MEMORY_PRINTER_STATE_WAIT_WR_TRANSITION:
+            begin
+                state_next = `MEMORY_PRINTER_STATE_WAIT_WR;
+            end
+
             `MEMORY_PRINTER_STATE_WAIT_WR:
             begin
                 start_wr_next = `LOW;
-                wr_wait_next  = `HIGH;
 
-                if (i_wr_end && wr_wait)
-                    begin
-                        wr_wait_next  = `LOW;
-                        state_next = `MEMORY_PRINTER_STATE_PRINT;
-                    end
+                if (i_wr_end)
+                    state_next = `MEMORY_PRINTER_STATE_PRINT;
             end
 
         endcase

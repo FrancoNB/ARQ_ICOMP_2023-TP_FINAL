@@ -31,7 +31,7 @@ module debugger
         output wire                                  o_mips_enabled,
         output wire [UART_BUS_SIZE - 1 : 0]          o_uart_data_wr,
         output wire [REGISTER_SIZE - 1 : 0]          o_mips_instruction,
-        output wire [5 : 0]                          o_status_flags
+        output wire [4 : 0]                          o_state
     );
 
     wire                             start_uart_rd;
@@ -177,7 +177,7 @@ module debugger
         .o_mips_enabled             (o_mips_enabled),
         .o_data_wr                  (data_uart_wr_control),
         .o_mips_instruction         (o_mips_instruction),
-        .o_status_flags             (o_status_flags)
+        .o_state                    (o_state)
     );
 
 endmodule

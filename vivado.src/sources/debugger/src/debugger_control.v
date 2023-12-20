@@ -31,7 +31,7 @@ module debugger_control
         output wire                             o_mips_enabled,
         output wire [DATA_OUT_BUS_SIZE - 1 : 0] o_data_wr,
         output wire [REGISTER_SIZE - 1 : 0]     o_mips_instruction,
-        output wire [5 : 0]                     o_status_flags
+        output wire [4 : 0]                     o_state
     );
 
     localparam BYTES_PER_INSTRUCTION       = REGISTER_SIZE / `BYTE_SIZE;
@@ -151,10 +151,10 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_UNKNOWN_CMD:
             begin
-                data_wr_next      = {`DEBUGGER_ERROR_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_ERROR_UNKNOWN_COMMAND};
-                start_uart_wr_next     = `HIGH;
-                return_state_next = return_state;
-                state_next        = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
+                data_wr_next       = {`DEBUGGER_ERROR_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_ERROR_UNKNOWN_COMMAND};
+                start_uart_wr_next = `HIGH;
+                return_state_next  = return_state;
+                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
             end
 
             `DEBUGGER_CONTROL_STATE_END_PROGRAM:
@@ -165,11 +165,19 @@ module debugger_control
                 state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
             end
 
+            `DEBUGGER_CONTROL_STATE_EMPTY_PROGRAM:
+            begin
+                data_wr_next       = {`DEBUGGER_INFO_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_ERROR_NO_PROGRAM_LOAD};
+                start_uart_wr_next = `HIGH;
+                return_state_next  = return_state;
+                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
+            end
+
             /* ---------------------------------------------------- Decodificación de Comandos ---------------------------------------------------- */
 
             `DEBUGGER_CONTROL_STATE_DECODE:
             begin
-                case (i_data_uart_rd)
+                case (i_data_uart_rd[7 : 0])
                     "L": 
                     begin
                         mips_flush_next         = `HIGH;
@@ -219,7 +227,7 @@ module debugger_control
                     begin
                         return_state_next = `DEBUGGER_CONTROL_STATE_IDLE;
                         state_next        = `DEBUGGER_CONTROL_STATE_UNKNOWN_CMD;
-                    end
+                    end 
                 endcase
             end
 
@@ -291,7 +299,7 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_RUN_DECODE:
             begin
-                case (i_data_uart_rd)
+                case (i_data_uart_rd[7 : 0])
                     "S":
                     begin
                         state_next = `DEBUGGER_CONTROL_STATE_IDLE;
@@ -332,19 +340,35 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_RUN_BY_STEPS:
             begin
-                mips_enabled_next = `HIGH;
-                state_next        = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
-                clk_counter_next  = clk_counter + 1;
+                if (~i_instruction_memory_empty)
+                    begin
+                        mips_enabled_next = `HIGH;
+                        state_next        = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
+                        clk_counter_next  = clk_counter + 1;
+                    end
+                else
+                    begin
+                        return_state_next = `DEBUGGER_CONTROL_STATE_IDLE;
+                        state_next        = `DEBUGGER_CONTROL_STATE_EMPTY_PROGRAM;
+                    end
             end
 
             `DEBUGGER_CONTROL_STATE_RUN:
             begin
-                mips_enabled_next = `HIGH;
-
-                if (i_mips_end_program)
+                if (~i_instruction_memory_empty)
                     begin
-                        start_register_print_next = `HIGH;
-                        state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
+                        mips_enabled_next = `HIGH;
+
+                        if (i_mips_end_program)
+                            begin
+                                start_register_print_next = `HIGH;
+                                state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
+                            end
+                    end
+                else
+                    begin
+                        return_state_next = `DEBUGGER_CONTROL_STATE_IDLE;
+                        state_next        = `DEBUGGER_CONTROL_STATE_EMPTY_PROGRAM;
                     end
             end
 
@@ -391,6 +415,6 @@ module debugger_control
     assign o_start_memory_print   = start_memory_print;
     assign o_data_wr              = data_wr;
     assign o_clk_cicle            = clk_counter;
-    assign o_status_flags         = { i_instruction_memory_full, i_instruction_memory_empty, execution_by_steps, execution_debug, mips_enabled, i_mips_end_program };
+    assign o_state                = state;
 
 endmodule

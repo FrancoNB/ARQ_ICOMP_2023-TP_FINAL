@@ -10,11 +10,11 @@ module tb_top;
     localparam SB_TICKS   = 16;
     localparam DVSR       = 27;
  
-    reg          i_clk; 
-    reg          i_reset;
-    reg          i_rx;
-    wire         o_tx;
-    wire [5 : 0] o_status_led;
+    reg           i_clk; 
+    reg           i_reset;
+    reg           i_rx;
+    wire          o_tx;
+    wire [15 : 0] o_status_led;
     
     top
     #(

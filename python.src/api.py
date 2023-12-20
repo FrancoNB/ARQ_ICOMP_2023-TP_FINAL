@@ -1,10 +1,12 @@
 import sys
 import signal
 import os
-import uart
+import serial.tools.list_ports
  
 from asm_parser import asmParser
 from tables import instructionTable, registerTable
+from uart import Uart
+from mips_handler import MipsHandler
 
 def get_terminal_width():
     try:
@@ -35,6 +37,9 @@ def print_separator():
     width = get_terminal_width()
     print("\n" + '=' * width + "\n")
 
+def hex(value):
+    return '{:02X}'.format(value)
+
 def sigint_handler(signal, frame):
     clear_screen(False)
     
@@ -44,7 +49,43 @@ def sigint_handler(signal, frame):
         uart.serial_port.close()
         
     sys.exit(0)
+
+def list_ports():
+    ports = list(serial.tools.list_ports.comports())
+    for i, port in enumerate(ports):
+        print(f"{i + 1}. {port.device}")
+    return ports
+
+def select_port():
+    ports = list_ports()
     
+    while True:
+        try:
+            opcion = int(input("\nSeleccione el número del puerto al que desea conectarse: "))
+            if 1 <= opcion <= len(ports):
+                return ports[opcion - 1].device
+            else:
+                print("\nOpción no válida. Ingrese un número válido.")
+        except ValueError:
+            print("\nEntrada no válida. Ingrese un número válido.")
+            
+def select_baudrate():
+    baudrate_options = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
+    
+    while True:
+        print("\nSeleccione el baudrate:")
+        for i, option in enumerate(baudrate_options):
+            print(f"{i + 1}. {option}")
+        
+        try:
+            opcion = int(input("\nIngrese el número de la opción: "))
+            if 1 <= opcion <= len(baudrate_options):
+                return baudrate_options[opcion - 1]
+            else:
+                print("\nOpción no válida. Ingrese un número válido.")
+        except ValueError:
+            print("\nEntrada no válida. Ingrese un número válido.")
+            
 def main_menu():
     clear_screen()
     print("1. Cargar programa")
@@ -89,28 +130,57 @@ def compile_program():
             print("\nEl archivo no existe.\n")
             
 def upload_program():
-    uart.write(76)
+    type = None
+    content = None
     
-    print()
-    
-    for i in range (0, len(parser.instructions), 4):
-        for j in range (3, -1, -1):
-            index = i+j
-            if (index < len(parser.instructions)):
-                byte = int(parser.instructions[index], 16)
-                uart.write(byte)
-            else: 
-                break
-        print()
-    
-    print_bytes_as_hex(uart.read())
-    
-def print_bytes_as_hex(byte_sequence):
-    for byte in byte_sequence:
-        hex_representation = hex(byte)[2:].zfill(2)
-        print(hex_representation, end=' ')
-    print() 
+    uart.start_load_program()
 
+    if uart.available():
+        type, _, _, content = uart.read() 
+    
+    if type == uart.ERROR_PREFIX:
+        print(f"\nError al cargar el programa: 0x{hex(content)} !\n")
+    else:
+        for i in range (0, len(parser.instructions), 4):
+            for j in range (3, -1, -1):
+                index = i+j
+                if (index < len(parser.instructions)):
+                    uart.write(int(parser.instructions[index], 16))
+                else: 
+                    break
+                
+        type, _, _, content = uart.read() 
+        
+        if type == uart.ERROR_PREFIX:
+            print(f"\nError al cargar el programa: 0x{hex(content)} !\n")
+        else:
+            print("\nPrograma cargado exitosamente.")
+            
+            
+def print_results():
+    print_registers()
+    print_memory()
+    
+def print_registers():
+    for i in range(0, 32):
+        type, _, addr, content = uart.read()
+        
+        if type == uart.ERROR_PREFIX:
+            print(f"\nError al ejecutar el programa: 0x{hex(content)} !\n")
+            break
+        else:
+            print(f"Registro ({addr}): 0x{hex(content)}")
+
+def print_memory():
+    for i in range(0, 32):
+        type, _, addr, content = uart.read()
+        
+        if type == uart.ERROR_PREFIX:
+            print(f"\nError al ejecutar el programa: 0x{hex(content)} !\n")
+            break
+        else:
+            print(f"Memoria ({hex(addr)}): 0x{hex(content)}")
+    
 signal.signal(signal.SIGINT, sigint_handler)
 
 if __name__ == "__main__":
@@ -118,22 +188,29 @@ if __name__ == "__main__":
     
     signal.signal(signal.SIGINT, sigint_handler)
 
-    while True:
-        clear_screen()
-
-        if not uart.serial_port or not uart.baudrate:
-            clear_screen()
-            uart.init()
-            clear_screen()
-                
+    clear_screen()
+    serial_port = select_port()
+    clear_screen()
+    baudrate = select_baudrate()
+    clear_screen()
+    
+    uart = Uart(serial_port, baudrate)
+    mips_handler = MipsHandler(uart)
+    
+    while True:           
         option = main_menu()
         
         if option == 1:
             compile_program()
         elif option == 2:
             clear_screen()
+            mips_handler.execute_program()
+            print_results()
+            
         elif option == 3:
-            pass
+            clear_screen()
+            uart.delete_load_program()
+            print("Programa eliminado exitosamente.")
         elif option == 4:
             clear_screen(False)
             

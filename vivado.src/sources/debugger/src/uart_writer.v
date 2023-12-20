@@ -70,7 +70,7 @@ module uart_writer
                     begin
                         if (!i_uart_full)
                             begin
-                                uart_data_wr_next = i_wr_data[uart_wr_buffer_pointer * `BYTE_SIZE +: `BYTE_SIZE];
+                                uart_data_wr_next = i_wr_data[uart_wr_buffer_pointer * UART_BUS_SIZE +: UART_BUS_SIZE];
                                 uart_wr_next      = `HIGH;
                                 state_next        = `UART_WRITER_STATE_WR;
                             end

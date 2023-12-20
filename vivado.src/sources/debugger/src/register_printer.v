@@ -28,7 +28,6 @@ module register_printer
     reg [DATA_OUT_BUS_SIZE - 1 : 0] data_wr, data_wr_next;
     reg [REGISTER_POINTER_SIZE : 0] register_pointer, register_pointer_next;
     reg                             _end, end_next;
-    reg                             wr_wait, wr_wait_next;
 
     always @(posedge i_clk) 
     begin
@@ -39,7 +38,6 @@ module register_printer
                 data_wr          <= `CLEAR(DATA_OUT_BUS_SIZE);
                 start_wr         <= `LOW;
                 _end             <= `LOW;
-                wr_wait          <= `LOW;
             end
         else
             begin
@@ -48,7 +46,6 @@ module register_printer
                 data_wr          <= data_wr_next;
                 start_wr         <= start_wr_next;
                 _end             <= end_next;
-                wr_wait          <= wr_wait_next;
             end
     end
     
@@ -59,8 +56,7 @@ module register_printer
         data_wr_next          = data_wr;
         start_wr_next         = start_wr;
         end_next              = _end;
-        wr_wait_next          = wr_wait;
-    
+
         case (state)
     
             `REGISTER_PRINTER_STATE_IDLE:
@@ -79,7 +75,7 @@ module register_printer
                         data_wr_next          = {`DEBUGGER_INFO_PREFIX, i_clk_cicle, { { (UART_BUS_SIZE - REGISTER_POINTER_SIZE) { 1'b0 } }, register_pointer } , i_registers_conntent[register_pointer * REGISTER_SIZE +: REGISTER_SIZE] };
                         register_pointer_next = register_pointer + 1;
                         start_wr_next         = `HIGH;
-                        state_next            = `REGISTER_PRINTER_STATE_WAIT_WR;
+                        state_next            = `REGISTER_PRINTER_STATE_WAIT_WR_TRANSITION;
                     end
                 else
                     begin
@@ -89,16 +85,17 @@ module register_printer
                     end
             end
 
+            `REGISTER_PRINTER_STATE_WAIT_WR_TRANSITION:
+            begin
+                state_next = `REGISTER_PRINTER_STATE_WAIT_WR;
+            end
+
             `REGISTER_PRINTER_STATE_WAIT_WR:
             begin
                 start_wr_next = `LOW;
-                wr_wait_next  = `HIGH;
 
-                if (i_wr_end && wr_wait)
-                    begin
-                        wr_wait_next = `LOW;
-                        state_next = `REGISTER_PRINTER_STATE_PRINT;
-                    end
+                if (i_wr_end)
+                    state_next = `REGISTER_PRINTER_STATE_PRINT;
             end
 
         endcase
