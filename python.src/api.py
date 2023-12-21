@@ -1,224 +1,325 @@
-import sys
-import signal
 import os
-import serial.tools.list_ports
- 
+import signal
+import sys
+import serial
+import platform
+
+from serial.tools import list_ports
+from mips_handler import MipsHandler, ExecutionsModes, MipsHandlerException
 from asm_parser import asmParser
-from tables import instructionTable, registerTable
 from uart import Uart
-from mips_handler import MipsHandler
+from tables import instructionTable, registerTable
+from colorama import Fore, Back, Style
 
-def get_terminal_width():
-    try:
-        return os.get_terminal_size().columns
-    except OSError:
-        return 80 
-    
-def clear_screen(title = True):
-    os.system('cls' if os.name == 'nt' else 'clear')
-    
-    if title:
-        print_title(" Programa de control para el procesador MIPS ", uart.serial_port_name, uart.baudrate)
-        print("\n")
+uart = None
+mips_handler = None
+parser = None
 
-def print_title(title, port, baudrate):
-    width = get_terminal_width()
-
-    if port and baudrate:
-        title_width = len(title + f"-> Puerto: {port} | Baudrate: {baudrate} ")
-        padding = (width - title_width) // 2
-        print(f"{'=' * padding}{title}-> Puerto: {port} | Baudrate: {baudrate} {'=' * padding}")
-    else:
-        title_width = len(title)
-        padding = (width - title_width) // 2
-        print(f"{'=' * padding}{title}{'=' * padding}")
-
-def print_separator():
-    width = get_terminal_width()
-    print("\n" + '=' * width + "\n")
-
-def hex(value):
-    return '{:02X}'.format(value)
+class SigIntException(Exception):
+    pass
 
 def sigint_handler(signal, frame):
-    clear_screen(False)
-    
-    print("\nSeñal SIGINT recibida. Cerrando el programa.\n")
-    
-    if uart.serial_port:
-        uart.serial_port.close()
-        
-    sys.exit(0)
+    raise SigIntException("SIGINT received")
 
-def list_ports():
-    ports = list(serial.tools.list_ports.comports())
-    for i, port in enumerate(ports):
-        print(f"{i + 1}. {port.device}")
-    return ports
-
-def select_port():
-    ports = list_ports()
-    
-    while True:
-        try:
-            opcion = int(input("\nSeleccione el número del puerto al que desea conectarse: "))
-            if 1 <= opcion <= len(ports):
-                return ports[opcion - 1].device
-            else:
-                print("\nOpción no válida. Ingrese un número válido.")
-        except ValueError:
-            print("\nEntrada no válida. Ingrese un número válido.")
-            
-def select_baudrate():
-    baudrate_options = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
-    
-    while True:
-        print("\nSeleccione el baudrate:")
-        for i, option in enumerate(baudrate_options):
-            print(f"{i + 1}. {option}")
+def clear_screen():
+    if platform.system() == "Windows":
+        os.system("cls")
+    else:
+        os.system("clear")
         
-        try:
-            opcion = int(input("\nIngrese el número de la opción: "))
-            if 1 <= opcion <= len(baudrate_options):
-                return baudrate_options[opcion - 1]
-            else:
-                print("\nOpción no válida. Ingrese un número válido.")
-        except ValueError:
-            print("\nEntrada no válida. Ingrese un número válido.")
+def print_centered_title():
+    console_width = os.get_terminal_size().columns
+
+    title = "MIPS User Interface"
+    spaces_before = (console_width - len(title) - 2) // 2
+    spaces_after = console_width - len(title) - spaces_before - 2
+
+    border_line = "-" * console_width
+
+    print(Fore.LIGHTGREEN_EX + Back.BLACK + border_line)
+    print(Fore.LIGHTGREEN_EX + Back.BLACK + "-" + " " * spaces_before + Fore.LIGHTGREEN_EX + title +
+          Fore.LIGHTGREEN_EX + " " * spaces_after + Back.BLACK + "-")
+    print(Fore.LIGHTGREEN_EX + Back.BLACK + border_line)
+    print(Style.RESET_ALL)
+
+def print_menu(options):
+    print_centered_title()
+
+    for i, option in enumerate(options):
+        print(f"  {option}")
+
+def get_user_selection(options):
+    current_row = 0
+
+    while True:
+        clear_screen()
+        print_menu(options)
+        key = input("\nEnter your choice (Press Enter to confirm): ")
+
+        if key.isdigit():
+            selected_index = int(key) - 1
+            if 0 <= selected_index < len(options):
+                return selected_index
             
+        display_error("Invalid option")
+        
+        input(Fore.LIGHTYELLOW_EX + "\nPress enter to continue..." + Style.RESET_ALL)
+        
+def get_baud_rate():
+    baud_rates = [9600, 19200, 38400, 57600, 115200]
+    options = [f"{i + 1}. {rate} bps" for i, rate in enumerate(baud_rates)]
+    selected_index = get_user_selection(options)
+    return baud_rates[selected_index]
+
+def select_serial_port():
+    ports = get_serial_ports()
+    options = [f"{i + 1}. {port}" for i, port in enumerate(ports)]
+    selected_index = get_user_selection(options)
+    return ports[selected_index]
+
+def get_serial_ports():
+    try:
+        ports = list_ports.comports()
+        return [port.device for port in ports]
+    except serial.SerialException:
+        return []
+
+def display_error(message):
+    print(Fore.RED + f"\nError: {message}" + Style.RESET_ALL)
+
 def main_menu():
-    clear_screen()
-    print("1. Cargar programa")
-    print("2. Ejecutar programa cargado")
-    print("3. Eliminar programa cargado")
-    print("4. Salir")
-    print("\n")
-    
-    while True:
-        try:
-            option = int(input("Ingrese el número de la opción: "))
-            if 1 <= option <= 4:
-                return option
-            else:
-                print("\nOpción no válida. Ingrese un número válido.\n")
-        except ValueError:
-            print("\nEntrada no válida. Ingrese un número válido.\n")
+    menu_options = ["Load Program", "Execute Program", "Execute by Steps", "Execute in Debug Mode", 
+                    "Delete Program", "Exit"]
 
-def build(file):
-    lines = file.readlines()
-    result = parser.firstPass(lines)
-    if result != 0:
-        print(result)
-        print("Error en la compilación.\n")
-    else:
-        print("Programa compilado exitosamente.\n")  
-        parser.asmToMachineCode(lines)
-        for string in parser.outputArray:
-            print(string)
-               
-def compile_program():
-    clear_screen()
     while True:
-        try: 
-            file_name = input("Ingrese la ruta del archivo ASM a cargar: ")
-            file = open(file_name)
+        options = [f"{i + 1}. {option}" for i, option in enumerate(menu_options)]
+        selected_index = get_user_selection(options)
+
+        if selected_index == 0:
+            load_program()
+        elif selected_index == 1:
+            run_normal_mode_program()
+        elif selected_index == 2:
+            run_step_mode_program()
+        elif selected_index == 3:
+            run_debug_mode_program()
+        elif selected_index == 4:
+            delete_program()
+        elif selected_index == 5:
             clear_screen()
-            build(file)
-            upload_program()
-            return
-        except FileNotFoundError:
-            print("\nEl archivo no existe.\n")
-            
-def upload_program():
-    type = None
-    content = None
-    
-    uart.start_load_program()
+            print(Fore.LIGHTYELLOW_EX + "\nExiting...\n" + Style.RESET_ALL)
+            break
+        
+        input(Fore.LIGHTYELLOW_EX + "\nPress enter to continue..." + Style.RESET_ALL)
 
-    if uart.available():
-        type, _, _, content = uart.read() 
+def load_program():
+    clear_screen()
     
-    if type == uart.ERROR_PREFIX:
-        print(f"\nError al cargar el programa: 0x{hex(content)} !\n")
-    else:
-        for i in range (0, len(parser.instructions), 4):
-            for j in range (3, -1, -1):
-                index = i+j
-                if (index < len(parser.instructions)):
-                    uart.write(int(parser.instructions[index], 16))
-                else: 
-                    break
+    try:
+        print_centered_title()
+
+        program_path = input("Input the program path: ")
+
+        with open(program_path, "r") as file:
+            lines = file.readlines()
+            result = parser.firstPass(lines)
+
+            if result != 0:
+                display_error(f"Compilation error: {result}")
+            else:
+                clear_screen()
                 
-        type, _, _, content = uart.read() 
-        
-        if type == uart.ERROR_PREFIX:
-            print(f"\nError al cargar el programa: 0x{hex(content)} !\n")
-        else:
-            print("\nPrograma cargado exitosamente.")
-            
-            
-def print_results():
-    print_registers()
-    print_memory()
-    
-def print_registers():
-    for i in range(0, 32):
-        type, _, addr, content = uart.read()
-        
-        if type == uart.ERROR_PREFIX:
-            print(f"\nError al ejecutar el programa: 0x{hex(content)} !\n")
-            break
-        else:
-            print(f"Registro ({addr}): 0x{hex(content)}")
+                print_centered_title()
+                
+                print(Fore.GREEN + "Program compiled successfully. Result:\n" + Style.RESET_ALL)
+                
+                parser.asmToMachineCode(lines)
+                
+                for string in parser.outputArray:
+                    print(Fore.LIGHTBLUE_EX + string + Style.RESET_ALL)
+                    
+                mips_handler.load_program(parser.instructions)
+                
+                print(Fore.GREEN + "\nProgram loaded successfully !" + Style.RESET_ALL)
+    except SigIntException:
+        raise
+    except FileNotFoundError:
+        display_error("File not found")
+    except MipsHandlerException as e:
+        display_error(e)
+    except Exception as e:
+        display_error(e)
 
-def print_memory():
-    for i in range(0, 32):
-        type, _, addr, content = uart.read()
+def run_normal_mode_program():
+    clear_screen()
+
+    try:
+        print_centered_title()
+
+        mips_handler.execute_program(ExecutionsModes.RELEASE)
+
+        registers = mips_handler.get_registers()
+        memory = mips_handler.get_memory()
         
-        if type == uart.ERROR_PREFIX:
-            print(f"\nError al ejecutar el programa: 0x{hex(content)} !\n")
-            break
-        else:
-            print(f"Memoria ({hex(addr)}): 0x{hex(content)}")
+        print_tables(registers, memory, False)    
+        
+        print(Fore.GREEN + "\nProgram executed successfully !" + Style.RESET_ALL)
+    except SigIntException:
+        raise
+    except MipsHandlerException as e:
+        display_error(e)
+    except Exception as e:
+        display_error(e)
     
-signal.signal(signal.SIGINT, sigint_handler)
+def run_step_mode_program():
+    clear_screen()
+
+    try:
+        print_centered_title()
+
+        program_end = mips_handler.execute_program(ExecutionsModes.BY_STEPS)
+
+        while not program_end:
+            clear_screen()
+            print_centered_title()
+            
+            registers = mips_handler.get_registers_by_last_cicle()
+            memory = mips_handler.get_memory_by_last_cicle()
+        
+            print_tables(registers, memory)    
+
+            while user_input := input("\nInput 'N' for next step. Input 'S' for exit: "):
+                if user_input.upper() == 'N':
+                    program_end = mips_handler.execute_program_next_step()
+                    break
+                elif user_input.upper() == 'S':
+                    mips_handler.execute_program_stop()
+                    break
+                else:
+                    display_error("Invalid option")
+            
+            if user_input.upper() == 'S':
+                break
+
+        clear_screen()
+        print_centered_title()
+        
+        if program_end:
+            registers = mips_handler.get_registers_by_last_cicle()
+            memory = mips_handler.get_memory_by_last_cicle()
+        
+            print_tables(registers, memory)          
+            
+            print(Fore.GREEN + "\nProgram execution finished !" + Style.RESET_ALL)
+        else:
+            print(Fore.LIGHTRED_EX + "Aborting execution !" + Style.RESET_ALL)
+              
+    except SigIntException:
+        raise
+    except MipsHandlerException as e:
+        display_error(e)
+    except Exception as e:
+        display_error(e)
+
+def run_debug_mode_program():
+    clear_screen()
+
+    try:
+        print_centered_title()
+
+        print(Fore.LIGHTYELLOW_EX + "Execution program in debug mode..." + Style.RESET_ALL)
+
+        mips_handler.execute_program(ExecutionsModes.DEBUG)
+
+        registers = mips_handler.get_register_summary()
+        memory = mips_handler.get_memory_summary()
+        
+        print_tables(registers, memory)    
+        
+        print(Fore.GREEN + "\nProgram executed successfully !" + Style.RESET_ALL)
+    except SigIntException:
+        raise
+    except MipsHandlerException as e:
+        display_error(e)
+    except Exception as e:
+        display_error(e)
+
+def delete_program():
+    clear_screen()
+
+    try:
+        print_centered_title()
+
+        mips_handler.delete_program()
+        
+        print(Fore.GREEN + "Program deleted successfully !" + Style.RESET_ALL)
+    except SigIntException:
+        raise
+    except MipsHandlerException as e:
+        display_error(e)
+    except Exception as e:
+        display_error(e)
+
+def print_tables(registers, memory, show_cicle = True):
+        console_width = os.get_terminal_size().columns
+        half_width = console_width // 2
+
+        memory_area = f"{'Memory':^{half_width}}"
+        registers_area = f"{'Registers':^{half_width}}"
+
+        line = '-' * console_width
+        vertical_line = '|'
+
+        print(Fore.LIGHTBLUE_EX + line + registers_area + vertical_line + memory_area + line + Style.RESET_ALL)
+        
+        register_print = []
+        for register in registers:
+            if show_cicle:
+                register_print.append(f"    [Cicle {register['cicle']:04d}] R{register['addr']:02d} -> | 0x{register['content']:08X} |")
+            else:
+                register_print.append(f"    R{register['addr']:02d} -> | 0x{register['content']:08X} |")
+            
+        memory_print = []
+        for mem in memory:
+            if show_cicle:
+                memory_print.append(f"    [Cicle {mem['cicle']:04d}] M(0x{mem['addr']:02X}) -> | 0x{mem['content']:08X} |")
+            else:
+                memory_print.append(f"    M(0x{mem['addr']:02X}) -> | 0x{mem['content']:08X} |")
+            
+        for i in range(max(len(register_print), len(memory_print))):
+            if i < len(register_print):
+                register = register_print[i] + " " * (half_width - len(register_print[i]) - 1)
+            else:
+                register = " " * len(half_width - 1)
+                
+            if i < len(memory_print):
+                mem = memory_print[i] + " " * (half_width - len(memory_print[i]) - 1)
+            else:
+                mem = " " * len(half_width - 1)
+                
+            print(Fore.LIGHTCYAN_EX + register + Fore.LIGHTBLUE_EX + " " + vertical_line + Fore.LIGHTCYAN_EX + mem + Style.RESET_ALL)
+
+        print(Fore.LIGHTBLUE_EX + line + Style.RESET_ALL)
+
+def main():
+    global uart, mips_handler, parser
+
+    try:
+        signal.signal(signal.SIGINT, sigint_handler)
+
+        serial_port = select_serial_port()
+        baud_rate = get_baud_rate()
+
+        uart = Uart(serial_port, baud_rate)
+        mips_handler = MipsHandler(uart)
+        parser = asmParser(instructionTable, registerTable, 4)
+
+        main_menu()
+
+    except SigIntException:
+        clear_screen()
+        print(Fore.RED + "\nSignal SIGINT received. Exiting...\n" + Style.RESET_ALL)
+        sys.exit(0)
 
 if __name__ == "__main__":
-    parser = asmParser(instructionTable, registerTable, 4)
-    
-    signal.signal(signal.SIGINT, sigint_handler)
-
-    clear_screen()
-    serial_port = select_port()
-    clear_screen()
-    baudrate = select_baudrate()
-    clear_screen()
-    
-    uart = Uart(serial_port, baudrate)
-    mips_handler = MipsHandler(uart)
-    
-    while True:           
-        option = main_menu()
-        
-        if option == 1:
-            compile_program()
-        elif option == 2:
-            clear_screen()
-            mips_handler.execute_program()
-            print_results()
-            
-        elif option == 3:
-            clear_screen()
-            uart.delete_load_program()
-            print("Programa eliminado exitosamente.")
-        elif option == 4:
-            clear_screen(False)
-            
-            print("\nPrograma finalizado.\n")
-            
-            if uart.serial_port:
-                uart.serial_port.close()
-                
-            sys.exit(0)
-        
-        input("\nPresione una tecla para continuar...")
+    main()

@@ -26,9 +26,17 @@ COMMAND_STOP_EXECUTION   = 0x53
 
 ERROR_PREFIX = 0xff
 INFO_PREFIX  = 0x00
+REG_PREFIX  = 0x01
+MEM_PREFIX  = 0x02
 
-RESPONSE_INFO_END_PROGRAM  = 0x00000001
-RESPONSE_INFO_LOAD_PROGRAM = 0x00000010
+RESPONSE_INFO_END_PROGRAM  = 0x1
+RESPONSE_INFO_LOAD_PROGRAM = 0x2
+RESPONSE_INFO_STEP_END     = 0x3
+
+RESPONSE_ERROR_EMPTY_PROGRAM = 0x2
+
+class MipsHandlerException(Exception):
+    pass
 
 class MipsHandler():
     uart = None
@@ -40,36 +48,18 @@ class MipsHandler():
     def __init__(self, uart: Uart):
         self.uart = uart
     
-    def _read_response(self):
-        if (self.uart.available(RESPONSE_SIZE_BYTES)):
+    def _read_response(self, lock = False):
+        if (self.uart.available(RESPONSE_SIZE_BYTES) or lock):
             response = self.uart.read(RESPONSE_SIZE_BYTES)
             
-            response_type  = (response & RESPONSE_TYPE_MASK)  >> 56
-            response_cicle = (response & RESPONSE_CICLE_MASK) >> 48
-            response_addr  = (response & RESPONSE_ADDR_MASK)  >> 40
+            response_type  = (response & RESPONSE_TYPE_MASK)  >> 48
+            response_cicle = (response & RESPONSE_CICLE_MASK) >> 40
+            response_addr  = (response & RESPONSE_ADDR_MASK)  >> 32
             response_data  = (response & RESPONSE_DATA_MASK)
             
             return response_type, response_cicle, response_addr, response_data
         else:
-            return None, None, None, None
-        
-    def _read_registers(self):
-        for _ in range(0, 32):
-            type, cicle, addr, content = self._read_response()
-            
-            if type == ERROR_PREFIX:
-                raise Exception(f"Error al ejecutar el programa: 0x{hex(content)} !")
-            else:
-                self.registers.append({cicle, addr, content})
-                
-    def _read_memory(self):       
-        for _ in range(0, 32):
-            type, cicle, addr, content = self._read_response()
-            
-            if type == ERROR_PREFIX:
-                raise Exception(f"Error al ejecutar el programa: 0x{hex(content)} !")
-            else:
-                self.memory.append({cicle, addr, content})
+            return -1, -1, -1, -1
     
     def _send_command(self, command: int):
         self.uart.write(command)
@@ -77,14 +67,36 @@ class MipsHandler():
         self.uart.write(FILD_BYTE)
         self.uart.write(FILD_BYTE)
         time.sleep(0.1)
-          
+        
+    def _read_results(self) -> bool:
+        while True:
+            type, cicle, addr, content = self._read_response()
+            
+            if type == ERROR_PREFIX:
+                if content == RESPONSE_ERROR_EMPTY_PROGRAM:
+                    raise MipsHandlerException(f"Not program loaded !")
+                else:
+                    raise MipsHandlerException(f"Execution program error {hex(content)} !")
+            elif type == INFO_PREFIX:
+                if content == RESPONSE_INFO_END_PROGRAM:
+                    return True
+                elif content == RESPONSE_INFO_STEP_END:
+                    return False
+            elif type == REG_PREFIX:
+                self.registers.append({'cicle': cicle, 'addr': addr, 'content': content})
+            elif type == MEM_PREFIX:
+                self.memory.append({'cicle': cicle, 'addr': addr, 'content': content})
+            else:
+                time.sleep(0.01)
+                
+                
     def load_program(self, instructions: list):
         self._send_command(COMMAND_LOAD_PROGRAM)
         
         type, _, _, data = self._read_response()
         
-        if type != None:
-            raise Exception(f"Error al cargar el programa: 0x{hex(data)} !")
+        if type != -1:
+            raise MipsHandlerException(f"Failed to load program: {hex(data)} !")
         
         for i in range (0, len(instructions), 4):
             for j in range (3, -1, -1):
@@ -93,11 +105,11 @@ class MipsHandler():
                     self.uart.write(int(instructions[index], 16), byteorder='big')
                 else: 
                     break
-                
-        type, _, _, data = self._read_response()
+
+        type, _, _, data = self._read_response(lock=True)
         
         if type == ERROR_PREFIX:
-            raise Exception(f"Error al cargar el programa: 0x{hex(data)} !")
+            raise MipsHandlerException(f"Failed to load program: {hex(data)} !")
         
     def execute_program(self, mode: ExecutionsModes) -> bool:
         self.registers = []
@@ -113,78 +125,58 @@ class MipsHandler():
         elif mode == ExecutionsModes.RELEASE:
             self._send_command(COMMAND_EXECUTE)
         else:
-            raise Exception(f"Modo de ejecución no soportado: {mode} !")
-
-        type, _, _, data = self._read_response()
+            raise MipsHandlerException(f"Not supported execution mode: {mode} !")
         
-        if type != None:
-            raise Exception(f"Error al ejecutar el programa: 0x{hex(data)} !")
-        
-        while True:
-            self._read_registers()
-            self._read_memory()
-            
-            type, _, _, data = self._read_response()
-            
-            if type == ERROR_PREFIX:
-                raise Exception(f"Error al ejecutar el programa: 0x{hex(data)} !")
-            elif type == INFO_PREFIX:
-                if data == RESPONSE_INFO_END_PROGRAM:
-                    return True
-
-            if mode != ExecutionsModes.DEBUG:
-                break
-            
-        return False
+        return self._read_results()
     
     def execute_program_next_step(self) -> bool:
         if not self.in_step_execution_mode:
-            raise Exception(f"El programa no se está ejecutando en modo paso a paso !")
+            raise MipsHandlerException(f"The program is not running in step mode !")
             
         self._send_command(COMMAND_NEXT_STEP)
         
-        type, _, _, data = self._read_response()
-        
-        if type != None:
-            raise Exception(f"Error al ejecutar el paso: 0x{hex(data)} !")
-        
-        self._read_registers()
-        self._read_memory()
-        
-        type, _, _, data = self._read_response()
-        
-        if type == ERROR_PREFIX:
-            raise Exception(f"Error al ejecutar el paso: 0x{hex(data)} !")
-        elif type == INFO_PREFIX:
-            if data == RESPONSE_INFO_END_PROGRAM:
-                return True
-        
-        return False
+        return self._read_results()
     
     def execute_program_stop(self):
         if not self.in_step_execution_mode:
-            raise Exception(f"El programa no se está ejecutando en modo paso a paso !")
+            raise MipsHandlerException(f"The program is not running in step mode !")
             
         self._send_command(COMMAND_STOP_EXECUTION)
         
         type, _, _, data = self._read_response()
         
-        if type != None:
-            raise Exception(f"Error al detener la ejecución: 0x{hex(data)} !")
+        if type != -1:
+            raise MipsHandlerException(f"Stop execution error {hex(data)} !")
         
     def delete_program(self):
         self._send_command(COMMAND_DELETE)
         
         type, _, _, data = self._read_response()
         
-        if type != None:
-            raise Exception(f"Error al eliminar el programa: 0x{hex(data)} !")
+        if type != -1:
+            raise MipsHandlerException(f"Delete program error {hex(data)} !")
         
     def get_registers(self):
         return self.registers
     
     def get_memory(self):
         return self.memory
+    
+    def get_registers_by_last_cicle(self):
+        if not self.registers:
+            return []
+        
+        last_cicle = self.registers[-1]['cicle']
+        
+        return self.get_registers_by_cicle(last_cicle)
+    
+    def get_memory_by_last_cicle(self):
+        if not self.memory:
+            return []
+        
+        last_cicle = self.memory[-1]['cicle']
+        
+        return self.get_memory_by_cicle(last_cicle)
     
     def get_registers_by_cicle(self, cicle: int):
         return list(filter(lambda register: register['cicle'] == cicle, self.registers))
@@ -204,32 +196,55 @@ class MipsHandler():
     def get_memory_by_cicle_and_addr(self, cicle: int, addr: int):
         return list(filter(lambda memory: memory['cicle'] == cicle and memory['addr'] == addr, self.memory))
     
-    def get_register_summary(self, addr: int):
+    def get_register_summary(self):
         summary = []
-        
-        last_cicle = self.registers.index(self.registers.count() - 1)[0]
-        
+
+        if not self.registers or len(self.registers) < 2:
+            return summary
+
+        last_cicle = self.registers[-1]['cicle']
+
         for cicle in range(1, last_cicle):
-            prev_cicle_registers = self.get_memory_by_cicle_and_addr(cicle - 1, addr)
-            cicle_registers = self.get_memory_by_cicle_and_addr(cicle, addr)
-            
+            prev_cicle_registers = self.get_registers_by_cicle(cicle - 1)
+            cicle_registers = self.get_registers_by_cicle(cicle)
+
             for register in cicle_registers:
-                if register['content'] != prev_cicle_registers[register['addr']]['content']:
+                addr = register['addr']
+                
+                if addr not in prev_cicle_registers:
+                    continue
+
+                prev_content = prev_cicle_registers[addr]['content']
+
+                if register['content'] != prev_content:
                     summary.append(register)
-                    
+
         return summary
-    
-    def get_memory_summary(self, addr: int):
+
+    def get_memory_summary(self):
         summary = []
         
-        last_cicle = self.memory.index(self.memory.count() - 1)[0]
+        if not self.memory or len(self.memory) < 2:
+            return summary
+        
+        last_cicle = self.memory[-1]['cicle']
         
         for cicle in range(1, last_cicle):
-            prev_cicle_memory = self.get_memory_by_cicle_and_addr(cicle - 1, addr)
-            cicle_memory = self.get_memory_by_cicle_and_addr(cicle, addr)
+            prev_cicle_memory = self.get_memory_by_cicle(cicle - 1)
+            cicle_memory = self.get_memory_by_cicle(cicle)
             
             for memory in cicle_memory:
-                if memory['content'] != prev_cicle_memory[memory['addr']]['content']:
+                addr = memory['addr']
+                
+                if addr not in prev_cicle_memory:
+                    continue
+                
+                prev_content = prev_cicle_memory[addr]['content']
+                
+                if memory['content'] != prev_content:
                     summary.append(memory)
                     
         return summary
+        
+    def Close(self):
+        self.uart.close()

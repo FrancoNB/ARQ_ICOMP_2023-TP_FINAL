@@ -72,7 +72,7 @@ module register_printer
             begin
                 if (register_pointer < REGISTER_BANK_BUS_SIZE / REGISTER_SIZE)
                     begin
-                        data_wr_next          = {`DEBUGGER_INFO_PREFIX, i_clk_cicle, { { (UART_BUS_SIZE - REGISTER_POINTER_SIZE) { 1'b0 } }, register_pointer } , i_registers_conntent[register_pointer * REGISTER_SIZE +: REGISTER_SIZE] };
+                        data_wr_next          = {`DEBUGGER_REG_PREFIX, i_clk_cicle, { { (UART_BUS_SIZE - REGISTER_POINTER_SIZE - 1) { 1'b0 } }, register_pointer } , i_registers_conntent[register_pointer * REGISTER_SIZE +: REGISTER_SIZE] };
                         register_pointer_next = register_pointer + 1;
                         start_wr_next         = `HIGH;
                         state_next            = `REGISTER_PRINTER_STATE_WAIT_WR_TRANSITION;

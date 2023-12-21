@@ -27,7 +27,7 @@ module memory_printer
     reg                             start_wr, start_wr_next;
     reg [DATA_OUT_BUS_SIZE - 1 : 0] data_wr, data_wr_next;
     reg [MEMORY_POINTER_SIZE : 0]   memory_pointer, memory_pointer_next;
-    reg                             _end, end_next;
+    reg                              _end, end_next;
     
     always @(posedge i_clk) 
     begin
@@ -72,7 +72,7 @@ module memory_printer
             begin
                 if (memory_pointer < MEMORY_DATA_BUS_SIZE / MEMORY_SLOT_SIZE)
                     begin
-                        data_wr_next        = {`DEBUGGER_INFO_PREFIX, i_clk_cicle , { { (UART_BUS_SIZE - MEMORY_POINTER_SIZE) { 1'b0 } }, memory_pointer }, i_memory_conntent[memory_pointer * MEMORY_SLOT_SIZE +: MEMORY_SLOT_SIZE] };
+                        data_wr_next        = {`DEBUGGER_MEM_PREFIX, i_clk_cicle , { { (UART_BUS_SIZE - MEMORY_POINTER_SIZE - 1) { 1'b0 } }, memory_pointer }, i_memory_conntent[memory_pointer * MEMORY_SLOT_SIZE +: MEMORY_SLOT_SIZE] };
                         memory_pointer_next = memory_pointer + 1;
                         start_wr_next       = `HIGH;
                         state_next          = `MEMORY_PRINTER_STATE_WAIT_WR_TRANSITION;

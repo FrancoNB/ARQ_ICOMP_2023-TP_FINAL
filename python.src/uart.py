@@ -26,3 +26,6 @@ class Uart():
     def flush(self):
         self.serial_port.reset_input_buffer()
         self.serial_port.reset_output_buffer()
+        
+    def close(self):
+        self.serial_port.close()

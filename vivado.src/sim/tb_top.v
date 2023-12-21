@@ -152,7 +152,7 @@ module tb_top;
         receive_7byte();
         $display("r_data = %h", r_data);
 
-        w_data = "E";
+        w_data = "D";
         send_4byte();
 
         repeat(64)

@@ -117,8 +117,8 @@ class asmParser():
 
                     arg_count += 1
 
-                if (instruction == 'BEQ' or instruction == 'BNE'):
-                    args[2] = (int(args[2]) - self.currentLocation - 4)/4
+                #if (instruction == 'BEQ' or instruction == 'BNE'):
+                #    args[2] = (int(args[2]) - self.currentLocation - 4)/4
 
                 if (instruction == 'J' or instruction == 'JAL'):
                     args[0] = int(int(args[0])/4)
@@ -147,11 +147,6 @@ class asmParser():
                     machine_code[2] = args[1] #rt
                     machine_code[3] = args[0] #rd
                     machine_code[4] = args[2] #shamt
-                elif (instruction == "SLLV" or instruction == "SRLV" or instruction == "SRAV"):
-                    machine_code[1] = args[2] #rs
-                    machine_code[2] = args[1] #rt
-                    machine_code[3] = args[0] #rd
-                    machine_code[4] = '0' #shamt
                 else:
                     machine_code[1] = args[1] #rs
                     machine_code[2] = args[2] #rt
@@ -172,8 +167,13 @@ class asmParser():
 
             # I instruction
             if len(machine_code) == 4:
-                rs  = args[1]
-                rt  = args[0]
+                if instruction == 'BEQ' or instruction == 'BNE':
+                    rs  = args[0]
+                    rt  = args[1]
+                else:
+                    rs  = args[1]
+                    rt  = args[0]
+                    
                 imm = offset
 
                 if len(args) == 3:

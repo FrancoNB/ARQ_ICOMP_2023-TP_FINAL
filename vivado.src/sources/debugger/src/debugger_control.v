@@ -34,9 +34,6 @@ module debugger_control
         output wire [4 : 0]                     o_state
     );
 
-    localparam BYTES_PER_INSTRUCTION       = REGISTER_SIZE / `BYTE_SIZE;
-    localparam BYTES_COUNTER_SIZE          = $clog2(BYTES_PER_INSTRUCTION);
-
     reg [4 : 0]                     state, state_next, return_state, return_state_next;
     reg                             mips_flush, mips_flush_next;
     reg                             mips_enabled, mips_enabled_next; 
@@ -45,8 +42,6 @@ module debugger_control
     reg                             start_uart_wr, start_uart_wr_next;
     reg                             start_register_print, start_register_print_next;
     reg                             start_memory_print, start_memory_print_next;
-    reg                             register_print_wait, register_print_wait_next;
-    reg                             memory_print_wait, memory_print_wait_next;
     reg [DATA_OUT_BUS_SIZE - 1 : 0] data_wr, data_wr_next;
     reg                             mips_instruction_wr, mips_instruction_wr_next;
     reg [REGISTER_SIZE - 1 : 0]     mips_instruction, mips_instruction_next;
@@ -70,9 +65,7 @@ module debugger_control
                 mips_instruction_wr    <= `LOW;
                 execution_by_steps     <= `LOW;
                 execution_debug        <= `LOW;
-                register_print_wait    <= `LOW;
-                memory_print_wait      <= `LOW;
-                clk_counter            <= `CLEAR(BYTES_COUNTER_SIZE);
+                clk_counter            <= `CLEAR(UART_BUS_SIZE);
                 mips_instruction       <= `CLEAR(REGISTER_SIZE);
                 data_wr                <= `CLEAR(DATA_OUT_BUS_SIZE);
             end
@@ -90,8 +83,6 @@ module debugger_control
                 mips_instruction_wr    <= mips_instruction_wr_next;
                 execution_by_steps     <= execution_by_steps_next;
                 execution_debug        <= execution_debug_next;
-                register_print_wait    <= register_print_wait_next;
-                memory_print_wait      <= memory_print_wait_next;
                 clk_counter            <= clk_counter_next;
                 mips_instruction       <= mips_instruction_next;
                 data_wr                <= data_wr_next;
@@ -112,8 +103,6 @@ module debugger_control
         mips_instruction_wr_next    = mips_instruction_wr;
         execution_by_steps_next     = execution_by_steps;
         execution_debug_next        = execution_debug;
-        register_print_wait_next    = register_print_wait;
-        memory_print_wait_next      = memory_print_wait;
         clk_counter_next            = clk_counter;
         mips_instruction_next       = mips_instruction;
         data_wr_next                = data_wr;
@@ -123,28 +112,26 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_WAIT_RD:
             begin
-                start_uart_rd_next = `LOW;
-
                 if (i_uart_rd_end)
                     state_next   = return_state;
             end
 
             `DEBUGGER_CONTROL_STATE_WAIT_RD_TRANSITION:
             begin
-                state_next = `DEBUGGER_CONTROL_STATE_WAIT_RD;
+                start_uart_rd_next = `LOW;
+                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_RD;
             end
 
             `DEBUGGER_CONTROL_STATE_WAIT_WR:
             begin
-                start_uart_wr_next = `LOW;
-
                 if (i_uart_wr_end)
                     state_next   = return_state;
             end
 
             `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION:
             begin
-                state_next = `DEBUGGER_CONTROL_STATE_WAIT_WR;
+                start_uart_wr_next = `LOW;
+                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR;
             end
 
             /* ---------------------------------------------------- Comandos ---------------------------------------------------- */
@@ -167,7 +154,15 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_EMPTY_PROGRAM:
             begin
-                data_wr_next       = {`DEBUGGER_INFO_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_ERROR_NO_PROGRAM_LOAD};
+                data_wr_next       = {`DEBUGGER_ERROR_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_ERROR_NO_PROGRAM_LOAD};
+                start_uart_wr_next = `HIGH;
+                return_state_next  = return_state;
+                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
+            end
+
+            `DEBUGGER_CONTROL_STATE_END_STEP:
+            begin
+                data_wr_next       = {`DEBUGGER_INFO_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_INFO_END_STEP};
                 start_uart_wr_next = `HIGH;
                 return_state_next  = return_state;
                 state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
@@ -196,6 +191,7 @@ module debugger_control
 
                     "E":
                     begin
+                        clk_counter_next        = `CLEAR(UART_BUS_SIZE);
                         execution_by_steps_next = `LOW;
                         execution_debug_next    = `LOW;
                         mips_flush_next         = `HIGH;
@@ -205,7 +201,7 @@ module debugger_control
 
                     "S":
                     begin
-                        clk_counter_next        = { { (UART_BUS_SIZE - 1) { 1'b0 } }, 1'b1 };
+                        clk_counter_next        = `CLEAR(UART_BUS_SIZE);
                         mips_flush_next         = `HIGH;
                         execution_by_steps_next = `HIGH;
                         execution_debug_next    = `LOW;
@@ -215,7 +211,7 @@ module debugger_control
 
                     "D":
                     begin
-                        clk_counter_next        = { { (UART_BUS_SIZE - 1) { 1'b0 } }, 1'b1 };
+                        clk_counter_next        = `CLEAR(UART_BUS_SIZE);
                         mips_flush_next         = `HIGH;
                         execution_by_steps_next = `LOW;
                         execution_debug_next    = `HIGH;
@@ -265,10 +261,11 @@ module debugger_control
 
                 if (mips_instruction == `INSTRUCTION_HALT)
                     begin
-                        data_wr_next       = {`DEBUGGER_INFO_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_INFO_LOAD_PROGRAM};
-                        start_uart_wr_next = `HIGH;
-                        return_state_next  = `DEBUGGER_CONTROL_STATE_IDLE;
-                        state_next         = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
+                        data_wr_next          = {`DEBUGGER_INFO_PREFIX, `DEBUGGER_NO_CICLE_MASK, `DEBUGGER_NO_ADDRESS_MASK, `DEBUGGER_INFO_LOAD_PROGRAM};
+                        start_uart_wr_next    = `HIGH;
+                        return_state_next     = `DEBUGGER_CONTROL_STATE_IDLE;
+                        state_next            = `DEBUGGER_CONTROL_STATE_WAIT_WR_TRANSITION;
+                        mips_instruction_next = `CLEAR(REGISTER_SIZE);
                     end
                 else
                     begin
@@ -318,18 +315,26 @@ module debugger_control
                 endcase
             end
 
+            `DEBUGGER_CONTROL_STATE_RUN_WAIT_TRANSITION:
+            begin
+                start_uart_rd_next = `HIGH;
+                return_state_next  = `DEBUGGER_CONTROL_STATE_RUN_DECODE;
+                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_RD_TRANSITION;
+            end
+
             `DEBUGGER_CONTROL_STATE_RUN_IDLE:
             begin
-                if (~i_mips_end_program)
+                if (!i_mips_end_program)
                     begin
                         if (execution_by_steps)
                             begin
-                                start_uart_rd_next = `HIGH;
-                                return_state_next  = `DEBUGGER_CONTROL_STATE_RUN_DECODE;
-                                state_next         = `DEBUGGER_CONTROL_STATE_WAIT_RD_TRANSITION;
+                                return_state_next  = `DEBUGGER_CONTROL_STATE_RUN_WAIT_TRANSITION;
+                                state_next         = `DEBUGGER_CONTROL_STATE_END_STEP;
                             end
                         else if (execution_debug)
                             state_next = `DEBUGGER_CONTROL_STATE_RUN_BY_STEPS;
+                        else
+                            mips_enabled_next = `HIGH;
                     end
                 else
                     begin
@@ -340,11 +345,12 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_RUN_BY_STEPS:
             begin
-                if (~i_instruction_memory_empty)
+                if (!i_instruction_memory_empty)
                     begin
-                        mips_enabled_next = `HIGH;
-                        state_next        = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
-                        clk_counter_next  = clk_counter + 1;
+                        mips_enabled_next         = `HIGH;
+                        start_register_print_next = `HIGH;
+                        state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS_TRANSITION;
+                        clk_counter_next          = clk_counter + 1;
                     end
                 else
                     begin
@@ -355,15 +361,17 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_RUN:
             begin
-                if (~i_instruction_memory_empty)
+                if (!i_instruction_memory_empty)
                     begin
                         mips_enabled_next = `HIGH;
 
                         if (i_mips_end_program)
                             begin
                                 start_register_print_next = `HIGH;
-                                state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
+                                state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS_TRANSITION;
                             end
+                        else
+                            clk_counter_next = clk_counter + 1;
                     end
                 else
                     begin
@@ -373,30 +381,33 @@ module debugger_control
             end
 
             /* ---------------------------------------------------- Envia Registros y datos en Memoria ---------------------------------------------------- */
+            
+            `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS_TRANSITION:
+            begin
+                mips_enabled_next         = `LOW;
+                start_register_print_next = `LOW;
+                state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS;
+            end
 
             `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS:
             begin
-                start_register_print_next = `LOW;
-                register_print_wait_next  = `HIGH;
-
-                if (i_register_print_end && register_print_wait)
+                if (i_register_print_end)
                     begin
-                        register_print_wait_next = `LOW;
                         start_memory_print_next  = `HIGH;
-                        state_next               = `DEBUGGER_CONTROL_STATE_PRINT_MEMORY_DATA;
+                        state_next               = `DEBUGGER_CONTROL_STATE_PRINT_MEMORY_DATA_TRANSITION;
                     end
+            end
+
+            `DEBUGGER_CONTROL_STATE_PRINT_MEMORY_DATA_TRANSITION:
+            begin
+                start_memory_print_next = `LOW;
+                state_next              = `DEBUGGER_CONTROL_STATE_PRINT_MEMORY_DATA;
             end
 
             `DEBUGGER_CONTROL_STATE_PRINT_MEMORY_DATA:
             begin
-                start_memory_print_next = `LOW;
-                memory_print_wait_next  = `HIGH;
-
-                if (i_memory_print_end && memory_print_wait)
-                    begin
-                        memory_print_wait_next = `LOW;
-                        state_next             = `DEBUGGER_CONTROL_STATE_RUN_IDLE;
-                    end
+                if (i_memory_print_end)
+                    state_next = `DEBUGGER_CONTROL_STATE_RUN_IDLE;
             end
 
             /* ---------------------------------------------------------------------------------------------------------------------------- */
