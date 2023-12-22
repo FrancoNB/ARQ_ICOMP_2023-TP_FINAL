@@ -19,24 +19,31 @@ module pc
     );
 
     reg [`BITS_FOR_STATE_COUNTER_PC - 1 : 0] state, state_next; 
-    reg [PC_SIZE - 1 : 0]                    pc;
+    reg [PC_SIZE - 1 : 0]                    pc, pc_next;
 
     always @ (negedge i_clk) 
     begin
         if(i_reset || i_flush || i_clear)
-            state <= `STATE_PC_IDLE;
+            begin
+                state <= `STATE_PC_IDLE;
+                pc    <= `CLEAR(PC_SIZE);
+            end
         else
-            state <= state_next;
+            begin
+                state <= state_next;
+                pc    <= pc_next;
+            end
     end
 
     always @ (*) 
     begin
         state_next = state;
+        pc_next    = pc;
 
         case(state)
             `STATE_PC_IDLE: 
                 begin
-                    pc         = `CLEAR(PC_SIZE);
+                    pc_next    = `CLEAR(PC_SIZE);
                     state_next = `STATE_PC_NEXT;
                 end
 
@@ -48,19 +55,14 @@ module pc
                                 state_next = `STATE_PC_PROGRAM_END;
                             else 
                                 begin
-                                    if(i_not_load)
-                                        state_next = `STATE_PC_NOT_LOAD;
-                                    else
+                                    if(~i_not_load)
                                         begin
-                                            pc         = i_next_pc;
+                                            pc_next    = i_next_pc;
                                             state_next = `STATE_PC_NEXT;
                                         end
                                 end
                         end
                 end
-            
-            `STATE_PC_NOT_LOAD:
-                state_next = `STATE_PC_NEXT;
 
             `STATE_PC_PROGRAM_END:
             begin

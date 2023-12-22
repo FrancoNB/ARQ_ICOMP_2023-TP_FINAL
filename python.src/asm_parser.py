@@ -117,8 +117,8 @@ class asmParser():
 
                     arg_count += 1
 
-                #if (instruction == 'BEQ' or instruction == 'BNE'):
-                #    args[2] = (int(args[2]) - self.currentLocation - 4)/4
+                if (instruction == 'BEQ' or instruction == 'BNE'):
+                    args[2] = (int(args[2]) - self.currentLocation - 4)/4
 
                 if (instruction == 'J' or instruction == 'JAL'):
                     args[0] = int(int(args[0])/4)
@@ -223,25 +223,23 @@ class asmParser():
             return 4
         else:
             return "NOT VALID INSTRUCTION: " + instruction
-            
-
 
     def hex2bin(self, hex_val, num_bits):
-            tc = False
-            if '-' in hex_val:
-                tc = True
-                hex_val = hex_val.replace('-', '')
+        is_negative = False
 
-            bit_string = '0' * num_bits
-            bin_val    = str(bin(int(hex_val, 16)))[2:]
-            bit_string = bit_string[0: num_bits - len(bin_val)] + bin_val + bit_string[num_bits:]
+        if '-' in hex_val:
+            is_negative = True
+            hex_val = hex_val.replace('-', '')
 
-            if tc:
-                bit_string = '1' + bit_string[1:]
+        bin_val = format(int(hex_val, 16), f'0{num_bits}b')
 
-            return bit_string
+        if is_negative:
+            bin_val = bin_val[-num_bits:]
+            bin_val = bin_val.replace('0', '2').replace('1', '0').replace('2', '1')
+            bin_val = format(int(bin_val, 2) + 1, f'0{num_bits}b')
+
+        return str(bin_val)
     
-
     def bin2hex(self, bit_string):
         bit_string = '0b'+bit_string
         hex_string = str(hex(int(bit_string, 2)))[2:]

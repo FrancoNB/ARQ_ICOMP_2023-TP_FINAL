@@ -204,46 +204,40 @@ class MipsHandler():
 
         last_cicle = self.registers[-1]['cicle']
 
-        for cicle in range(1, last_cicle):
+        for cicle in range(2, last_cicle):
             prev_cicle_registers = self.get_registers_by_cicle(cicle - 1)
             cicle_registers = self.get_registers_by_cicle(cicle)
 
             for register in cicle_registers:
                 addr = register['addr']
-                
-                if addr not in prev_cicle_registers:
-                    continue
-
+               
                 prev_content = prev_cicle_registers[addr]['content']
 
                 if register['content'] != prev_content:
-                    summary.append(register)
+                    summary.append({'cicle': register['cicle'], 'addr': register['addr'], 'content': register['content'],  'prev_content': prev_content})
 
         return summary
 
     def get_memory_summary(self):
         summary = []
-        
+
         if not self.memory or len(self.memory) < 2:
             return summary
-        
+
         last_cicle = self.memory[-1]['cicle']
-        
-        for cicle in range(1, last_cicle):
+
+        for cicle in range(2, last_cicle):
             prev_cicle_memory = self.get_memory_by_cicle(cicle - 1)
             cicle_memory = self.get_memory_by_cicle(cicle)
-            
+
             for memory in cicle_memory:
                 addr = memory['addr']
-                
-                if addr not in prev_cicle_memory:
-                    continue
-                
+               
                 prev_content = prev_cicle_memory[addr]['content']
-                
+
                 if memory['content'] != prev_content:
-                    summary.append(memory)
-                    
+                    summary.append({'cicle': memory['cicle'], 'addr': memory['addr'], 'content': memory['content'],  'prev_content': prev_content})
+
         return summary
         
     def Close(self):

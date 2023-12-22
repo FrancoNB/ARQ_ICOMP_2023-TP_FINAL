@@ -191,7 +191,6 @@ module debugger_control
 
                     "E":
                     begin
-                        clk_counter_next        = `CLEAR(UART_BUS_SIZE);
                         execution_by_steps_next = `LOW;
                         execution_debug_next    = `LOW;
                         mips_flush_next         = `HIGH;
@@ -201,22 +200,22 @@ module debugger_control
 
                     "S":
                     begin
-                        clk_counter_next        = `CLEAR(UART_BUS_SIZE);
-                        mips_flush_next         = `HIGH;
-                        execution_by_steps_next = `HIGH;
-                        execution_debug_next    = `LOW;
-                        return_state_next       = `DEBUGGER_CONTROL_STATE_RUN_BY_STEPS;
-                        state_next              = `DEBUGGER_CONTROL_STATE_RESET;
+                        mips_flush_next           = `HIGH;
+                        execution_by_steps_next   = `HIGH;
+                        execution_debug_next      = `LOW;
+                        start_register_print_next = `HIGH;
+                        return_state_next         = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS_TRANSITION;
+                        state_next                = `DEBUGGER_CONTROL_STATE_RESET;
                     end
 
                     "D":
                     begin
-                        clk_counter_next        = `CLEAR(UART_BUS_SIZE);
-                        mips_flush_next         = `HIGH;
-                        execution_by_steps_next = `LOW;
-                        execution_debug_next    = `HIGH;
-                        return_state_next       = `DEBUGGER_CONTROL_STATE_RUN_BY_STEPS;
-                        state_next              = `DEBUGGER_CONTROL_STATE_RESET;
+                        mips_flush_next           = `HIGH;
+                        execution_by_steps_next   = `LOW;
+                        execution_debug_next      = `HIGH;
+                        start_register_print_next = `HIGH;
+                        return_state_next         = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS_TRANSITION;
+                        state_next                = `DEBUGGER_CONTROL_STATE_RESET;
                     end
 
                     default:
@@ -229,6 +228,7 @@ module debugger_control
 
             `DEBUGGER_CONTROL_STATE_IDLE:
             begin
+                clk_counter_next         = { { (UART_BUS_SIZE - 1) { `LOW } }, `HIGH };
                 mips_enabled_next        = `LOW;
                 mips_instruction_wr_next = `LOW;
                 mips_flush_next          = `LOW;
@@ -363,15 +363,16 @@ module debugger_control
             begin
                 if (!i_instruction_memory_empty)
                     begin
-                        mips_enabled_next = `HIGH;
-
                         if (i_mips_end_program)
                             begin
                                 start_register_print_next = `HIGH;
                                 state_next                = `DEBUGGER_CONTROL_STATE_PRINT_REGISTERS_TRANSITION;
                             end
                         else
-                            clk_counter_next = clk_counter + 1;
+                            begin
+                                mips_enabled_next = `HIGH;
+                                clk_counter_next  = clk_counter + 1;
+                            end
                     end
                 else
                     begin

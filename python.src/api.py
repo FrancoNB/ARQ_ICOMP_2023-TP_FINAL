@@ -27,10 +27,10 @@ def clear_screen():
     else:
         os.system("clear")
         
-def print_centered_title():
+def print_centered_title(menu):
     console_width = os.get_terminal_size().columns
 
-    title = "MIPS User Interface"
+    title = "MIPS Handler API" + " - " + menu
     spaces_before = (console_width - len(title) - 2) // 2
     spaces_after = console_width - len(title) - spaces_before - 2
 
@@ -42,18 +42,18 @@ def print_centered_title():
     print(Fore.LIGHTGREEN_EX + Back.BLACK + border_line)
     print(Style.RESET_ALL)
 
-def print_menu(options):
-    print_centered_title()
+def print_menu(options, menu_name):
+    print_centered_title(menu_name)
 
     for i, option in enumerate(options):
         print(f"  {option}")
 
-def get_user_selection(options):
+def get_user_selection(options, menu_name):
     current_row = 0
 
     while True:
         clear_screen()
-        print_menu(options)
+        print_menu(options, menu_name)
         key = input("\nEnter your choice (Press Enter to confirm): ")
 
         if key.isdigit():
@@ -68,13 +68,24 @@ def get_user_selection(options):
 def get_baud_rate():
     baud_rates = [9600, 19200, 38400, 57600, 115200]
     options = [f"{i + 1}. {rate} bps" for i, rate in enumerate(baud_rates)]
-    selected_index = get_user_selection(options)
+    selected_index = get_user_selection(options, "Baud Rate Selection")
     return baud_rates[selected_index]
 
 def select_serial_port():
     ports = get_serial_ports()
+
+    if not ports:
+        clear_screen()
+        print_centered_title("Serial Port Selection")
+        display_error("No serial ports found ! Program will exit...")
+        input(Fore.LIGHTYELLOW_EX + "\nPress enter to continue..." + Style.RESET_ALL)
+        clear_screen()
+        sys.exit(0)
+    
     options = [f"{i + 1}. {port}" for i, port in enumerate(ports)]
-    selected_index = get_user_selection(options)
+    
+    selected_index = get_user_selection(options, "Serial Port Selection")
+    
     return ports[selected_index]
 
 def get_serial_ports():
@@ -93,7 +104,7 @@ def main_menu():
 
     while True:
         options = [f"{i + 1}. {option}" for i, option in enumerate(menu_options)]
-        selected_index = get_user_selection(options)
+        selected_index = get_user_selection(options, "Main Menu")
 
         if selected_index == 0:
             load_program()
@@ -116,7 +127,7 @@ def load_program():
     clear_screen()
     
     try:
-        print_centered_title()
+        print_centered_title("Load Program")
 
         program_path = input("Input the program path: ")
 
@@ -129,7 +140,7 @@ def load_program():
             else:
                 clear_screen()
                 
-                print_centered_title()
+                print_centered_title("Load Program")
                 
                 print(Fore.GREEN + "Program compiled successfully. Result:\n" + Style.RESET_ALL)
                 
@@ -154,7 +165,7 @@ def run_normal_mode_program():
     clear_screen()
 
     try:
-        print_centered_title()
+        print_centered_title("Execute Program")
 
         mips_handler.execute_program(ExecutionsModes.RELEASE)
 
@@ -175,13 +186,13 @@ def run_step_mode_program():
     clear_screen()
 
     try:
-        print_centered_title()
+        print_centered_title("Execute Program by Steps")
 
         program_end = mips_handler.execute_program(ExecutionsModes.BY_STEPS)
 
         while not program_end:
             clear_screen()
-            print_centered_title()
+            print_centered_title("Execute Program by Steps")
             
             registers = mips_handler.get_registers_by_last_cicle()
             memory = mips_handler.get_memory_by_last_cicle()
@@ -202,7 +213,7 @@ def run_step_mode_program():
                 break
 
         clear_screen()
-        print_centered_title()
+        print_centered_title("Execute Program by Steps")
         
         if program_end:
             registers = mips_handler.get_registers_by_last_cicle()
@@ -225,7 +236,7 @@ def run_debug_mode_program():
     clear_screen()
 
     try:
-        print_centered_title()
+        print_centered_title("Execute Program in Debug Mode")
 
         print(Fore.LIGHTYELLOW_EX + "Execution program in debug mode..." + Style.RESET_ALL)
 
@@ -248,7 +259,7 @@ def delete_program():
     clear_screen()
 
     try:
-        print_centered_title()
+        print_centered_title("Delete Program")
 
         mips_handler.delete_program()
         
@@ -285,6 +296,14 @@ def print_tables(registers, memory, show_cicle = True):
                 memory_print.append(f"    [Cicle {mem['cicle']:04d}] M(0x{mem['addr']:02X}) -> | 0x{mem['content']:08X} |")
             else:
                 memory_print.append(f"    M(0x{mem['addr']:02X}) -> | 0x{mem['content']:08X} |")
+                
+        if len(register_print) > len(memory_print):
+            for i in range(len(register_print) - len(memory_print)):
+                memory_print.append(" " * half_width)
+            
+        elif len(memory_print) > len(register_print):
+            for i in range(len(memory_print) - len(register_print)):
+                register_print.append(" " * half_width)
             
         for i in range(max(len(register_print), len(memory_print))):
             if i < len(register_print):
