@@ -10,13 +10,19 @@ Autores:
 ## Tabla de Contenidos
 
 - [¿ Cómo usar este repositorio ?](#¿-cómo-usar-este-repositorio-)
-    - [1. Clonar el repositorio](#1-clonar-el-repositorio)
-    - [2. Crear un nuevo proyecto en Vivado](#2-crear-un-nuevo-proyecto-en-vivado)
-    - [3. Agregar los archivos del proyecto](#3-agregar-los-archivos-del-proyecto)
-    - [4. Generar el bitstream](#4-generar-el-bitstream)
-    - [5. Programar la FPGA](#5-programar-la-fpga)
-    - [6. Ejectuar la aplicación de usuario](#6-ejectuar-la-aplicación-de-usuario)
+   - [1. Clonar el repositorio](#1-clonar-el-repositorio)
+   - [2. Crear un nuevo proyecto en Vivado](#2-crear-un-nuevo-proyecto-en-vivado)
+   - [3. Agregar los archivos del proyecto](#3-agregar-los-archivos-del-proyecto)
+   - [4. Generar el bitstream](#4-generar-el-bitstream)
+   - [5. Programar la FPGA](#5-programar-la-fpga)
+   - [6. Ejectuar la aplicación de usuario](#6-ejectuar-la-aplicación-de-usuario)
 - [¿ Cómo usar la aplicación de usuario ?](#¿-cómo-usar-la-aplicación-de-usuario-)
+   - [1. Cargar un programa en la memoria de instrucciones](#1-cargar-un-programa-en-la-memoria-de-instrucciones)
+   - [2. Ejecutar el programa cargado en la memoria de instrucciones](#2-ejecutar-el-programa-cargado-en-la-memoria-de-instrucciones)
+   - [3. Ejecutar el programa cargado en la memoria de instrucciones paso a paso](#3-ejecutar-el-programa-cargado-en-la-memoria-de-instrucciones-paso-a-paso)
+   - [4. Ejecutar el programa cargado en la memoria de instrucciones en modo debug](#4-ejecutar-el-programa-cargado-en-la-memoria-de-instrucciones-en-modo-debug)
+   - [5. Eliminar el programa cargado en la memoria de instrucciones](#5-eliminar-el-programa-cargado-en-la-memoria-de-instrucciones)
+   - [6. Salir de la aplicación](#6-salir-de-la-aplicación)
 - [1. Resumen](#1-resumen)
 - [2. Especificaciones del Procesador](#2-especificaciones-del-procesador)
 - [3. Desarrollo](#3-desarrollo)
@@ -39,7 +45,6 @@ Autores:
     - [3.4. Operación del Procesador](#34-operación-del-procesador)
         - [3.4.1. UART](#341-uart)
         - [3.4.2. Debugger](#342-debugger)
-    - [3.5. Clock Wizard](#35-clock-wizard)
 - [4. Simulaciones](#4-simulaciones)
   	- [4.1. Etapa `IF`](#41-tests-etapa-if)
 		- [4.1.1. Test Bench para el módulo `PC`](#411-test-bench-para-el-módulo-pc)
@@ -73,6 +78,9 @@ Autores:
 			- [4.8.2.3. Ejecución Programa 3](#4823-ejecución-programa-3)
 	- [4.9. Test de Sistema](#49-test-de-sistema)
 - [5. Resultados](#5-resultados)
+   - [5.1. Programa 1](#51-Programa-1)
+   - [5.2. Programa 2](#52-Programa-2)
+   - [5.3. Programa 3](#53-Programa-3)
 - [6. Referencias](#6-referencias)
         
 ## ¿ Cómo usar este repositorio ?
@@ -104,6 +112,85 @@ Para operar el procesador, se utiliza la aplicación `python.src/app.py`. Para e
 
 ## ¿ Cómo usar la aplicación de usuario ?
 
+La aplicación de usuario se ejecuta en una terminal y permite interactuar con el procesador. Para ejecutar la aplicación, se debe abrir una terminal en el directorio `python.src` y ejecutar el comando `py Api.py`. La primera ventana que se muestra es la siguiente:
+
+<p align="center">
+  <img src="imgs/Api_Port_Select.png" alt="Procesador MIPS Segmentado">
+</p>
+
+En esta ventana se debe seleccionar el puerto serial al que está conectada la placa de desarrollo. Si la conexión se establece correctamente, se muestra la siguiente ventana:
+
+<p align="center">
+  <img src="imgs/Api_Baudrate_Select.png" alt="Procesador MIPS Segmentado">
+</p>
+
+> [!NOTE]
+> Por defecto, la placa de desarrollo se conecta a un puerto serial con una velocidad de transmisión de datos de 19200 baudios.
+
+Esta ventana permite seleccionar la velocidad de transmisión de datos. Se debe seleccionar la misma velocidad que se utilizó para programar la FPGA. Si la velocidad se selecciona correctamente, se muestra el menú principal de la aplicación:
+
+<p align="center">
+  <img src="imgs/Api_Main_Menu.png" alt="Procesador MIPS Segmentado">
+</p>
+
+Este menú permite seleccionar una de las siguientes opciones:
+
+   - `1`: Carcar un programa en la memoria de instrucciones.
+   - `2`: Ejecutar el programa cargado en la memoria de instrucciones.
+   - `3`: Ejecutar el programa cargado en la memoria de instrucciones paso a paso.
+   - `4`: Ejecutar el programa cargado en la memoria de instrucciones en modo debug.
+   - `5`: Elimitar el programa cargado en la memoria de instrucciones.
+   - `6`: Salir de la aplicación.
+
+### 1. Cargar un programa en la memoria de instrucciones
+
+<p align="center">
+  <img src="imgs/Api_Path_Input.png" alt="Cargar Programa">
+</p>
+
+Esta opción permite cargar un programa en la memoria de instrucciones. Para ello, se debe ingresar el nombre del archivo que contiene el programa. El programa debe estar escrito en lenguaje ensamblador MIPS. El progrma selecciona es compilado y cargado en la memoria de instrucciones. Si el programa se carga correctamente, se muestra el resultado de la compilación y un mensaje de operación exitosa:
+
+<p align="center">
+  <img src="imgs/Api_Load_Result.png" alt="Resultado de Carga">
+</p>
+
+### 2. Ejecutar el programa cargado en la memoria de instrucciones
+
+Esta opción permite ejecutar el programa cargado en la memoria de instrucciones. Si el programa se ejecuta correctamente, se muestra el estado final de los registros y de la memoria de datos:
+
+<p align="center">
+  <img src="imgs/Api_Execute_Program_2.png" alt="Ejecución Completa">
+</p>
+
+### 3. Ejecutar el programa cargado en la memoria de instrucciones paso a paso
+
+Esta opción permite ejecutar el programa cargado en la memoria de instrucciones paso a paso. En cada paso se muestra el estado de los registros y de la memoria de datos: 
+
+<p align="center">
+  <img src="imgs/Api_Execution_Step.png" alt="Paso a Paso">
+</p>
+
+Se puede avanzar al siguiente paso ingresando la letra `N` y presionando la tecla `Enter`. Para salir del modo paso a paso, se debe ingresar la letra `S` y presionar la tecla `Enter`.
+
+### 4. Ejecutar el programa cargado en la memoria de instrucciones en modo debug
+
+Esta opción permite ejecutar el programa cargado en la memoria de instrucciones en modo debug. En este modo, se muestra la evolución del estado de los registros y de la memoria a lo largo de la ejecución completa del programa:
+
+<p align="center">
+  <img src="imgs/Api_Execute_Debug.png" alt="Modo Debug">
+</p>
+
+### 5. Eliminar el programa cargado en la memoria de instrucciones
+
+Esta opción permite eliminar el programa cargado en la memoria de instrucciones. Si el programa se elimina correctamente, se muestra un mensaje de operación exitosa:
+
+<p align="center">
+  <img src="imgs/Api_Delete_Program.png" alt="Eliminar Programa">
+</p>
+
+### 6. Salir de la aplicación
+
+Esta opción permite salir de la aplicación. También es posible salir de la aplicación desde cualquier menú con la combinación de teclas `Ctrl + C`.
 
 ## 1. Resumen
 Este trabajo se desarrolló en el marco de la materia Arquitectura de Computadoras de la carrera Ingeniería en Computación de la Facultad de Ciencias Exactas, Físicas y Naturales de la Universidad Nacional de Córdoba. Consiste en la implementación de una versión simplificada de un procesador **MIPS** segmentado en una placa de desarrollo **FPGA**.
@@ -535,13 +622,6 @@ Sus funciones principales son:
 6. **Control de Flujo:**
    - Controla el flujo de ejecución del programa MIPS en función de los comandos recibidos y las condiciones del programa.
 
-### 3.5. Clock Wizard
-El [*Clock Wizard*](https://www.xilinx.com/products/intellectual-property/clocking_wizard.html) es una herramienta que se utiliza para generar la señal de reloj del sistema. En este proyecto, el *Clock Wizard* se utiliza para generar una señal de reloj con una frecuencia específica que sincroniza todas las operaciones del sistema.
-
-En un sistema MIPS, el reloj del sistema es fundamental para controlar el flujo de instrucciones y datos a través del procesador. Cada tick del reloj representa un ciclo de instrucción, durante el cual el procesador puede, por ejemplo, leer una instrucción de la memoria, decodificarla, ejecutarla y escribir los resultados de vuelta en la memoria.
-
-Además, en un sistema más complejo, el *Clock Wizard* puede generar múltiples señales de reloj con diferentes frecuencias a partir de una única señal de reloj de entrada. Esto puede ser útil en un sistema MIPS si diferentes componentes del sistema necesitan operar a diferentes velocidades. No es el caso de este proyecto.
-
 ## 4. Simulaciones
 Para garantizar el correcto funcionamiento del sistema MIPS, hemos llevado a cabo una serie de simulaciones utilizando la herramienta de simulación integrada en Vivado. Estas simulaciones nos permiten observar el comportamiento del sistema en un entorno controlado y verificar que todas las partes del sistema funcionan como se espera.
 
@@ -889,7 +969,7 @@ HALT
 
 
 ### 4.9. Test de Sistema
-El modulo `top` es responsable de la integración de todas las partes del sistema (*MIPS*, *Debugger*, *UART* y *Clock Wizard*). Sobre este modulo se ha realizado un *Test Bench* de sistema completo. El banco de pruebas realiza lo siguiente:
+El modulo `top` es responsable de la integración de todas las partes del sistema (*MIPS*, *Debugger* y *UART*). Sobre este modulo se ha realizado un *Test Bench* de sistema completo. El banco de pruebas realiza lo siguiente:
 
 1. **Programa de Prueba:**
    
@@ -920,6 +1000,27 @@ El modulo `top` es responsable de la integración de todas las partes del sistem
    - Se muestra en la consola el contenido de `r_data` que contiene los resultados recibidos.
 
 ## 5. Resultados
+
+Finalmente, se genera el bitstream del sistema completo y se carga en la FPGA. Se conecta la FPGA a un ordenador mediante un cable USB y se ejecuta un programa de prueba en el ordenador para verificar el funcionamiento del sistema. Se testeo el sistema con los tres programas de prueba definidos en la sección anterior. Se corroboró que el sistema funcionaba correctamente y que los resultados obtenidos eran los esperados. 
+
+### 5.1. Programa 1
+
+<p align="center">
+  <img src="imgs/Execute_PG1.png" alt="UART">
+</p>
+
+### 5.2. Programa 2
+
+<p align="center">
+  <img src="imgs/Execute_PG2.png" alt="UART">
+</p>
+
+### 5.3. Programa 3
+
+<p align="center">
+  <img src="imgs/Execute_PG3.png" alt="UART">
+</p>
+
 
 ## 6. Referencias
 
