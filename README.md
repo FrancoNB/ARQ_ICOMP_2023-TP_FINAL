@@ -124,9 +124,6 @@ En esta ventana se debe seleccionar el puerto serial al que está conectada la p
   <img src="imgs/Api_Baudrate_Select.png" alt="Procesador MIPS Segmentado">
 </p>
 
-> [!NOTE]
-> Por defecto, la placa de desarrollo se conecta a un puerto serial con una velocidad de transmisión de datos de 19200 baudios.
-
 Esta ventana permite seleccionar la velocidad de transmisión de datos. Se debe seleccionar la misma velocidad que se utilizó para programar la FPGA. Si la velocidad se selecciona correctamente, se muestra el menú principal de la aplicación:
 
 <p align="center">
@@ -141,6 +138,9 @@ Este menú permite seleccionar una de las siguientes opciones:
    - `4`: Ejecutar el programa cargado en la memoria de instrucciones en modo debug.
    - `5`: Elimitar el programa cargado en la memoria de instrucciones.
    - `6`: Salir de la aplicación.
+
+> [!NOTE]
+> Por defecto, la placa de desarrollo se conecta a un puerto serial con una velocidad de transmisión de datos de 19200 baudios.
 
 ### 1. Cargar un programa en la memoria de instrucciones
 
