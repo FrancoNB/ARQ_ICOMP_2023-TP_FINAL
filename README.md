@@ -81,7 +81,8 @@ Autores:
    - [5.1. Programa 1](#51-Programa-1)
    - [5.2. Programa 2](#52-Programa-2)
    - [5.3. Programa 3](#53-Programa-3)
-- [6. Referencias](#6-referencias)
+- [6. Análisis de Timing](#6-analisis-de-timing)
+- [7. Referencias](#7-referencias)
         
 ## ¿ Cómo usar este repositorio ?
 
@@ -1021,8 +1022,15 @@ Finalmente, se genera el bitstream del sistema completo y se carga en la FPGA. S
   <img src="imgs/Execute_PG3.png" alt="UART">
 </p>
 
+## 6. Análisis de Timing
 
-## 6. Referencias
+Se ha realizado un análisis de timing para verificar que el sistema cumple con las restricciones temporales necesarias para su correcto funcionamiento. Se han analizado las rutas críticas del sistema y se ha comprobado que cumplen con las restricciones de tiempo establecidas. Finalmente, se encuentra que el sistema cumple con las restricciones temporales y funciona correctamente con un clock maximo de 100 MHz.
+
+<p align="center">
+  <img src="imgs/Timing.png" alt="Timing">
+</p>
+
+## 7. Referencias
 
 - Patterson, D. A., & Hennessy, J. L. (2013). Computer Organization and Design MIPS Edition: The Hardware/Software Interface. Morgan Kaufmann.
 
